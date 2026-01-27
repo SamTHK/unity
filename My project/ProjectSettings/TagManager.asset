@@ -1,0 +1,75 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!78 &1
+TagManager:
+  serializedVersion: 3
+  tags: []
+  layers:
+  - Default
+  - TransparentFX
+  - Ignore Raycast
+  - 
+  - Water
+  - UI
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  m_SortingLayers:
+  - name: Void
+    uniqueID: 1174141357
+    locked: 0
+  - name: Floor
+    uniqueID: 3015431785
+    locked: 0
+  - name: Puddle
+    uniqueID: 151223717
+    locked: 0
+  - name: Default
+    uniqueID: 0
+    locked: 0
+  - name: Barrier
+    uniqueID: 2828825551
+    locked: 0
+  - name: Entity
+    uniqueID: 2215409717
+    locked: 0
+  - name: Lit Entity
+    uniqueID: 719146679
+    locked: 0
+  - name: Wall
+    uniqueID: 767296389
+    locked: 0
+  - name: Choosing
+    uniqueID: 2078870201
+    locked: 0
+  - name: Effect
+    uniqueID: 3745240645
+    locked: 0
+  - name: UI
+    uniqueID: 1714546357
+    locked: 0
+  m_RenderingLayers:
+  - Default

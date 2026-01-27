@@ -1,0 +1,21 @@
+using UnityEngine;
+
+
+public class Example1 : LevelPreset
+{
+    public Example1() 
+    {
+        mapID = "Scene_Example1";
+        name = "example1";
+    }
+
+    public override void Init(LevelManager lm)
+    {
+        Debug.Log("Finally, a W in your life");
+    }
+
+    public override void Update(LevelManager lm)
+    {
+        
+    }
+}
