@@ -6,8 +6,9 @@ using UnityEngine;
 public class Manager : MonoBehaviour
 {
     // Start is called before the first frame update
-    public string Language;
+    public string Language = "english";
     [SerializeField] GameObject levelManager;
+    public List<LocalizationUser> localizationUsers = new();
     void Start()
     {
         DontDestroyOnLoad(gameObject);
@@ -18,6 +19,15 @@ public class Manager : MonoBehaviour
     void Update()
     {
         
+    }
+
+    public void ChangeLanguage(string language)
+    {
+        Language = language;
+        for (int i = 0; i < localizationUsers.Count; i++)
+        {
+            localizationUsers[i].findNewText();
+        }    
     }
 
     async void LoadScene(string name)

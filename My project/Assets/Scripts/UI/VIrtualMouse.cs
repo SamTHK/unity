@@ -2,18 +2,33 @@ using UnityEngine;
 using UnityEngine.InputSystem.LowLevel;
 using UnityEngine.InputSystem.UI;
 
-public class VirtualMouse : MonoBehaviour
+public class VirMouse : MonoBehaviour
 {
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     private RectTransform rectTransform;
-    private VirtualMouseInput virtualMouseInput;
-    private float padding = 40f;
-    void Start()
+    [SerializeField] private RectTransform mouseTransform;
+    [SerializeField] private VirtualMouseInput virtualMouseInput;
+    [SerializeField] private float padding = 80f;
+    private void Awake()
     {
         rectTransform = (RectTransform)transform.parent.transform;
-        transform.position = new Vector2(Screen.width / 2, Screen.height / 2);
-        virtualMouseInput = GetComponent<VirtualMouseInput>();
+
+    }
+    private void Start()
+    {
+        mouseTransform.position = new Vector2(Screen.width / 2, Screen.height / 2) * rectTransform.localScale.x;
+        mouseTransform.localScale = rectTransform.localScale;
         InputState.Change(virtualMouseInput.virtualMouse.position, new Vector2(Screen.width / 2, Screen.height / 2));
+    }    
+    private void OnEnable()
+    {
+   
+        mouseTransform.position = new Vector2(Screen.width / 2, Screen.height / 2) * rectTransform.localScale.x;
+        mouseTransform.localScale = rectTransform.localScale;
+        if (virtualMouseInput.virtualMouse != null)
+        {
+            InputState.Change(virtualMouseInput.virtualMouse.position, new Vector2(Screen.width / 2, Screen.height / 2));
+        }
     }
 
     // Update is called once per frame

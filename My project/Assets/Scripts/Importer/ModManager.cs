@@ -18,7 +18,7 @@ public class ModManager : MonoBehaviour
     [SerializeField] GameObject Manager;
     public Dictionary<string, ScriptType> InternalWorks;
     public Dictionary<string, string> AssetBundlePairs;
-  
+    
 
     private void Awake()
     {
@@ -92,6 +92,8 @@ public class ModManager : MonoBehaviour
                             ModStarter pD = type.CreateInstanceAs<ModStarter>();
                             pD.mod = mod_name;
                             pD.Init(this);
+                            await  pD.Package_GetAsync(this);
+                          
                         }
                     }
                 }
@@ -106,8 +108,6 @@ public class ModManager : MonoBehaviour
             string[] p = path.Split(".");
             if (p.Last() == "json" || p.Last() == "hash")
             {
-           
-
                 AsyncOperationHandle OperationHandle = Addressables.LoadContentCatalogAsync(path, true);
                 while (!OperationHandle.IsDone)
                 {

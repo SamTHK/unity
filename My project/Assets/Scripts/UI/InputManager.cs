@@ -12,57 +12,45 @@ using UnityEngine.UIElements;
 public class InputManager : MonoBehaviour
 {
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    [SerializeField] private RectTransform rectTrans;
-    [SerializeField] private GameObject virMouseObject;
-    
-    private GameObject virMouse;
+
     public bool usingVirtualMouse;
     PlayerInput input;
+    public InputAction action;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-
+    [SerializeField] VirMouse mouse;
 
     void Awake()
     {
         input = GetComponent<PlayerInput>();
-  
-        virMouse = Instantiate(virMouseObject, rectTrans, false);
-        
-        
-        if (!input.currentControlScheme.Equals("Keyboard&Mouse"))
-        {
-            UnityEngine.Cursor.visible = false;
-            virMouse.SetActive(true);
-            usingVirtualMouse = true;
-        }
-        else
-        {
-            UnityEngine.Cursor.visible = true;
-            virMouse.SetActive(false);
-            usingVirtualMouse = false;
-        }    
-
-
-            input.onControlsChanged += Checkagain;
     }
 
-    void Checkagain(PlayerInput input)
+    void Start()
     {
+        Checkagain();
+    }
 
-        bool isMouse = input.currentControlScheme.Equals("Keyboard&Mouse");
-        if (isMouse)
+    public void Checkagain()
+    {
+        if (input != null)
         {
-            UnityEngine.Cursor.visible = true;
-            virMouse.SetActive(false);
-            usingVirtualMouse = false;
-        }
-        else
-        {
-            UnityEngine.Cursor.visible = false;
-            virMouse.SetActive(true);
-            usingVirtualMouse = true;
+            if (input.currentControlScheme == "Keyboard&Mouse")
+            {
+                usingVirtualMouse = false;
+                mouse.gameObject.SetActive(false);
+                UnityEngine.Cursor.visible = true;
+                Mouse.current.WarpCursorPosition(new Vector2(Screen.width / 2, Screen.height / 2));
+                
+            }
+            else
+            {
+                usingVirtualMouse = true;
+                UnityEngine.Cursor.visible = false;
+                mouse.gameObject.SetActive(true);
+
+            }
         }
     }
-    
 
-    
+   
+
 }

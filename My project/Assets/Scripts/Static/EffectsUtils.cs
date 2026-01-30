@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+using System.Linq;
+using UnityEditor;
 
-public class EffectsUtils
+public static class EffectsUtils
 {
     public static List<object> ObjectList( object[] objects, params object[] param)
     {
@@ -27,5 +29,8 @@ public class EffectsUtils
         return preset.ToString();
     }
 
- 
+   
+
+
+   
 }

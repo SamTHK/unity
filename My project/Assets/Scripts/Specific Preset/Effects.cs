@@ -29,7 +29,7 @@ public class EffectPair
     public Effect effect { get; private set; }
     public Condition condition { get; private set; }
     public EffectHolder holder;
-    private string name;
+
     public string[] firstproc { get; private set; }
     public string[] cVariables { get; private set; }
     public string[] eVariables { get; private set; }
@@ -38,7 +38,7 @@ public class EffectPair
     {
         this.base_effect = base_effect;
         this.holder = holder;
-        name = effect.filename + ";" + condition.filename;
+
         firstproc = condition.firstproc;
 
         AssetManager aS = ObjectUtils.AssetManager;
@@ -72,32 +72,7 @@ public class EffectPair
             effect.Proc(proc_optimized, eVariables, new_chain, this, args);
         }
     }
-    public bool CompareEffectName(string name)
-    {
-        string eName = this.name.Split(';').First();
-        if (eName == name)
-        {
-            return true;
-        }
-        return false;
-    }
-    public bool CompareConditionName(string name)
-    {
-        string cName = this.name.Split(';').Last();
-        if (cName == name)
-        {
-            return true;
-        }
-        return false;
-    }
-    public bool CompareName(string eName, string cName)
-    {
-        if (CompareEffectName(eName) && CompareConditionName(cName))
-        {
-            return true;
-        }
-        return false;
-    }
+    
 }
 
 [Serializable]

@@ -5,9 +5,6 @@ using UnityEngine.Rendering;
 
 public class ObjectUtils
 {
-
-
-    
     private static LevelManager levelManager;
     public static LevelManager LevelManager
     {

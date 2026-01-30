@@ -1,6 +1,9 @@
+using NUnit.Framework;
 using RoslynCSharp;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
@@ -151,6 +154,53 @@ public class AssetManager : MonoBehaviour
         Debug.Log("Error: FILE " + name + " NOT FOUND");
         return null;
     }
+
+    public async Task<Package> LoadPackageAsync(string bundle)
+    {
+        TextAsset json = await LoadAssetAsync<TextAsset>(bundle);
+        if (json != null)
+        {
+            return JsonUtility.FromJson<Package>(json.text);
+        }
+        Debug.Log("Error: FILE " + bundle + " NOT FOUND");
+        return null;
+    }
+
+    public async Task<LocalizationPack> LoadLocalizationAsync(string bundle)
+    {
+        string bundle_language = bundle + "-" + ObjectUtils.Manager.Language;
+        TextAsset json;
+
+        json = await LoadAssetAsync<TextAsset>(bundle_language);
+        if (json != null)
+        {
+            return JsonUtility.FromJson<LocalizationPack>(json.text);
+        }
+        else
+        {
+            bundle_language = bundle + "-english";
+            json = await LoadAssetAsync<TextAsset>(bundle_language);
+            if (json != null)
+            {
+                return JsonUtility.FromJson<LocalizationPack>(json.text);
+            }
+        }    
+            Debug.Log("Error: FILE " + bundle + " NOT FOUND");
+        return null;
+    }
+
+    public async Task<List<string>> LoadTextFromLocalization(string bundle, string key)
+    {
+        LocalizationPack pack =  await LoadLocalizationAsync(bundle);
+        if (pack != null) 
+        {
+            int i = pack.localization_key.FindIndex(x => x == key);
+            string text = pack.localization[i];
+            return text.Split(";,;").ToList();
+        }
+        Debug.Log("Error: FILE " + bundle + " NOT FOUND");
+        return null;
+    }    
 
     public SomeThing LoadInternalWork<SomeThing>(string name) where SomeThing : InternalWork
     {

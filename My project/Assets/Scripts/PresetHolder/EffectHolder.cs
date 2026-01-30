@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using Unity.Serialization.Json;
+using UnityEngine;
 
 public abstract class Effector
 {
@@ -27,19 +29,49 @@ public class EffectHolder
         List<EffectPair> effects = this.effects[proc];
         foreach (EffectPair e in effects)
         {
-                e.Proc(proc, chain, arg);
+             e.Proc(proc, chain, arg);
         }
+    }
+
+    public void GlobalProc(string proc, List<EffectPair> chain, List<object> arg)
+    {
         if (!level_effect)
         {
             ObjectUtils.LevelManager.Proc(proc, chain, arg);
         }
     }
 
-    public async void AddEffect(bool base_, string effect, string condition, List<EffectPair> chain, params object[] arg)
+    public void FullProc(string proc, List<EffectPair> chain, List<object> arg)
+    {
+        Proc(proc, chain, arg);
+        GlobalProc(proc, chain, arg);
+    }
+
+    public async void AddEffectPreset(bool base_, string effect, string condition, List<EffectPair> chain, params object[] arg)
     {
         AssetManager a = ObjectUtils.AssetManager;
         EffectPreset efPr = await a.LoadPresetAsync<EffectPreset>(effect);
         ConditionPreset cnPr = await a.LoadPresetAsync<ConditionPreset>(condition);
+        EffectPair eP = new(base_, this, efPr, cnPr);
+        string[] firstproc = cnPr.firstproc;
+
+        foreach (string proc in firstproc)
+        {
+            if (effects[proc] == null)
+            {
+                effects[proc] = new();
+            }
+            effects[proc].Add(eP);
+        }
+
+        Proc("EffectAdded", chain, EffectsUtils.ObjectList(arg, eP));
+    }
+
+    public async void AddEffect(bool base_, string effect, string condition, List<EffectPair> chain, params object[] arg)
+    {
+        AssetManager a = ObjectUtils.AssetManager;
+        EffectPreset efPr = JsonUtility.FromJson<EffectPreset>(effect);
+        ConditionPreset cnPr = JsonUtility.FromJson<ConditionPreset>(condition);
         EffectPair eP = new(base_, this, efPr, cnPr);
         string[] firstproc = cnPr.firstproc;
 
