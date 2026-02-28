@@ -22,7 +22,7 @@ namespace CodeMonkey.MonoBehaviours {
      * */
     public class CameraFollow : MonoBehaviour {
 
-        public static CameraFollow Instance { get; private set; }
+        public static CameraFollow Instance { get; protected set; }
 
         private Camera myCamera;
         private Func<Vector3> GetCameraFollowPositionFunc;

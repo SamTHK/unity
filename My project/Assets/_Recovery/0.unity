@@ -1010,10 +1010,6 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 64.5
       objectReference: {fileID: 0}
-    - target: {fileID: 6584835820007075804, guid: 860debbd5b41aa740ae67adbdb8aea37, type: 3}
-      propertyPath: m_StickAction.m_Reference
-      value: 
-      objectReference: {fileID: -31739564699637206, guid: 88565e3f4c9062947a23f899120c847b, type: 3}
     - target: {fileID: 8554050419332625858, guid: 860debbd5b41aa740ae67adbdb8aea37, type: 3}
       propertyPath: m_Name
       value: Menu

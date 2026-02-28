@@ -22,7 +22,7 @@ namespace RoslynCSharp.CodeSecurity
         /// Get the last time the assembly was compiled in UTC file time.
         /// </summary>
         [field: SerializeField]
-        public long LastWriteTimeUTC { get; private set; }
+        public long LastWriteTimeUTC { get; protected set; }
 
         // Constructor
         /// <summary>

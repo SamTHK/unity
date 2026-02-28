@@ -31,13 +31,13 @@ namespace RoslynCSharp
         /// Used to auto update the assembly reference when the assembly image is changed on disk.
         /// </summary>
         [field: SerializeField]
-        public AssemblyReferenceSource ReferenceAssembly { get; private set; } = new();
+        public AssemblyReferenceSource ReferenceAssembly { get; protected set; } = new();
         /// <summary>
         /// The raw portable executable image of the compiled assembly, used for referencing purposes.
         /// </summary>
         [field: SerializeField]
         [field: HideInInspector]    // Important - array can be many kb-s and can be very slow to draw inspector in debug mode.
-        public byte[] AssemblyImage { get; private set; }
+        public byte[] AssemblyImage { get; protected set; }
         /// <summary>
         /// Return a value indicating whether that reference asset contains a valid assembly image.
         /// </summary>

@@ -37,12 +37,12 @@ namespace RoslynCSharp
         /// The name of the assembly that is referenced.
         /// </summary>
         [field: SerializeField]
-        public string AssemblyName { get; private set; }
+        public string AssemblyName { get; protected set; }
         /// <summary>
         /// The original path of the assembly that is referenced.
         /// </summary>
         [field: SerializeField]
-        public string AssemblyPath { get; private set; }
+        public string AssemblyPath { get; protected set; }
         /// <summary>
         /// Get the full path to the assembly.
         /// <see cref="AssemblyPath"/> may be relative to the Unity install or project folder, this property will resolve the full rooted path.
@@ -99,13 +99,13 @@ namespace RoslynCSharp
         /// The type of path that is stored by this assembly.
         /// </summary>
         [field: SerializeField]
-        public AssemblyReferencePathType AssemblyPathType { get; private set; }
+        public AssemblyReferencePathType AssemblyPathType { get; protected set; }
 
         /// <summary>
         /// Get the last time the assembly was compiled in UTC file time.
         /// </summary>
         [field: SerializeField]
-        public long LastWriteTimeUTC { get; private set; }
+        public long LastWriteTimeUTC { get; protected set; }
         /// <summary>
         /// Get the last date and time that the assembly was compiled.
         /// </summary>

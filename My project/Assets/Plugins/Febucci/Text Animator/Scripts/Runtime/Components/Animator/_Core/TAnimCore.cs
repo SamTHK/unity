@@ -108,12 +108,12 @@ namespace Febucci.UI.Core
         /// PS. this might still contain other tags from different supported plugins, like "color" from TMPro.
         /// To get the full stripped text, see <see cref="textWithoutAnyTag"/>.
         /// </remarks>
-        public string textWithoutTextAnimTags { get; private set; } = string.Empty;
-        public string textWithoutAnyTag { get; private set; } = string.Empty;
+        public string textWithoutTextAnimTags { get; protected set; } = string.Empty;
+        public string textWithoutAnyTag { get; protected set; } = string.Empty;
         
         bool hasText => charactersCount > 0;
 
-        public CharacterData latestCharacterShown { get; private set; }
+        public CharacterData latestCharacterShown { get; protected set; }
 
         /// <summary>
         /// <c>true</c> if the text is entirely visible, including waiting for appearance effects to finish

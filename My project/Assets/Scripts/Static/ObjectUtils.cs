@@ -16,7 +16,7 @@ public class ObjectUtils
             }
             return levelManager;
         }
-        private set
+        protected set
         {
             levelManager = value;
         }
@@ -43,7 +43,7 @@ public class ObjectUtils
             }
             return assetManager;
         }
-        private set
+        protected set
         {
             assetManager = value;
         }
@@ -60,7 +60,7 @@ public class ObjectUtils
             }
             return modManager;
         }
-        private set
+        protected set
         {
             modManager = value;
         }
@@ -77,7 +77,7 @@ public class ObjectUtils
             }
             return manager;
         }
-        private set
+        protected set
         {
             manager = value;
         }

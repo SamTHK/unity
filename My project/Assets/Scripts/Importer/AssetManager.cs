@@ -15,7 +15,7 @@ public class AssetManager : MonoBehaviour
     private List<AsyncOperationHandle> loaded = new();
     private Dictionary<string, object> objects = new();
     private Dictionary<string, Package> presets = new();
-    private Dictionary<string, InternalWork> internals = new();
+    private Dictionary<string, object> internals = new();
 
 
 
@@ -58,6 +58,48 @@ public class AssetManager : MonoBehaviour
         }
     }
 
+    public GameObject LoadPrefab(string thing)
+    {
+        string code = thing + "-" + typeof(GameObject).ToString();
+            AsyncOperationHandle<GameObject> handlesave = Addressables.LoadAssetAsync<GameObject>(thing);
+            handlesave.WaitForCompletion();
+            if (handlesave.IsValid())
+            {
+                loaded.Add(handlesave);
+                return Instantiate(handlesave.Result);
+            }
+            else
+            {
+                Addressables.Release(handlesave);
+            }
+        
+        Debug.Log("Error: FILE " + thing + " NOT FOUND");
+        return null;
+    }
+
+    public async Task<GameObject> LoadPrefabAsync(string thing)
+    {
+        string code = thing + "-" + typeof(GameObject).ToString();
+
+            AsyncOperationHandle<GameObject> handlesave = Addressables.LoadAssetAsync<GameObject>(thing);
+            while (!handlesave.IsDone)
+            {
+                await Task.Yield();
+            }
+
+            if (handlesave.IsValid())
+            {
+                loaded.Add(handlesave);
+                return Instantiate(handlesave.Result);
+            }
+            else
+            {
+                Addressables.Release(handlesave);
+            }
+        
+        Debug.Log("Error: FILE " + thing + " NOT FOUND");
+        return null;
+    }
     public AnyThing LoadAsset<AnyThing>(string thing) where AnyThing : UnityEngine.Object
     {
         string code = thing + "-" + typeof(AnyThing).ToString();
@@ -85,7 +127,7 @@ public class AssetManager : MonoBehaviour
         }
         Debug.Log("Error: FILE " + thing + " NOT FOUND");
         return null;
-    }
+    } 
     public async Task<AnyThing> LoadAssetAsync<AnyThing>(string thing) where AnyThing : UnityEngine.Object
     {
 
@@ -133,6 +175,7 @@ public class AssetManager : MonoBehaviour
     }    
     public async Task<SomeThing> LoadPresetAsync<SomeThing>(string name) where SomeThing : Preset
     {
+
 
         if (ObjectUtils.ModManager.AssetBundlePairs.TryGetValue(name, out string bundle))
         {
@@ -202,9 +245,11 @@ public class AssetManager : MonoBehaviour
         return null;
     }    
 
-    public SomeThing LoadInternalWork<SomeThing>(string name) where SomeThing : InternalWork
+    public SomeThing LoadInternalWork<SomeThing>(string name, GameObject gameObject = null, params object[] pa) 
     {
-        if (internals.TryGetValue(name, out InternalWork obj))
+
+
+        if (internals.TryGetValue(name, out object obj))
         {
             return (SomeThing)obj;
         }
@@ -212,18 +257,16 @@ public class AssetManager : MonoBehaviour
         {
             if (ObjectUtils.ModManager.InternalWorks.TryGetValue(name, out ScriptType scripttype))
             {
-                SomeThing interworks = scripttype.CreateInstanceAs<SomeThing>();
+                SomeThing interworks = scripttype.CreateInstanceAs<SomeThing>(gameObject, pa);
                 internals[name] = interworks;
                   return interworks;
-
-                
             }
         }
-
         Debug.Log("Error: FILE " + name +" NOT FOUND");
-        return null;
-
+        return default;
     }
+
+    
 
 
 }

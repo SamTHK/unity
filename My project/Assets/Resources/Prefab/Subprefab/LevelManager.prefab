@@ -60,4 +60,8 @@ MonoBehaviour:
   Opuddle: {fileID: 7113750325895830109, guid: 45eeeedb88aad014ea6912bd9d5af509, type: 3}
   Ochoose: {fileID: 7113750325895830109, guid: 7fb0b0798f2da6048a49ed22e8705aba, type: 3}
   Orange: {fileID: 7113750325895830109, guid: d026ebccd489ab14982536b1b9929809, type: 3}
+  tileBase: {fileID: 11400000, guid: 367c4a47c1d87b941be36ac058697efd, type: 2}
   tags: []
+  returnable: 0
+  rotate: 0
+  maxrotate: 0

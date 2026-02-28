@@ -237,7 +237,7 @@ namespace Febucci.UI.Core
         /// <summary>
         /// True if the typewriter is currently showing letters
         /// </summary>
-        public bool isShowingText { get; private set; }
+        public bool isShowingText { get; protected set; }
 
         /// <summary>
         /// Starts showing letters dynamically
@@ -384,7 +384,7 @@ namespace Febucci.UI.Core
         /// <summary>
         /// True if the typewriter is currently disappearing the text
         /// </summary>
-        public bool isHidingText { get; private set; }
+        public bool isHidingText { get; protected set; }
         
         /// <summary>
         /// Starts disappearing the text dynamically

@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEditor;
+using UnityEngine;
 
 #if UNITY_EDITOR
-public static class DrawInspectorExcept
-    {
+public static class DrawUtilInspector
+{
     public static void DrawInspectorExceptArray(this SerializedObject serializedObject, string[] fieldsToSkip)
     {
         serializedObject.Update();
@@ -24,6 +25,8 @@ public static class DrawInspectorExcept
         }
         serializedObject.ApplyModifiedProperties();
     }
+
+  
 }
 #endif
 

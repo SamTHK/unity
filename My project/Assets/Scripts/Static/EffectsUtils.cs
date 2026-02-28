@@ -1,19 +1,14 @@
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor;
 
 public static class EffectsUtils
 {
-    public static List<object> ObjectList( object[] objects, params object[] param)
+    public static List<object> ObjectList(object[] objects, params object[] param)
     {
-        List<object> list = new List<object>();
-        foreach (object obj in param)
+        List<object> list = objects.ToList();
+        for (int i = 0; i < param.Length; i++)
         {
-            list.Add(obj);
-        }
-        foreach (object obj in objects)
-        {
-            list.Add(obj);
+            list.Insert(i, param[i]);
         }
         return list;
 
@@ -29,8 +24,8 @@ public static class EffectsUtils
         return preset.ToString();
     }
 
-   
 
 
-   
+
+
 }

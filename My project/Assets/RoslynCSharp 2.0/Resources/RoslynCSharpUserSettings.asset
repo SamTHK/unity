@@ -1950,9 +1950,15 @@ MonoBehaviour:
           Allowed: 0
         Allowed: 0
       RootTypeRestrictions:
-      - Name: AssetManager
+      - Name: Construct
         Allowed: 0
-      - Name: InputManager
+      - Name: Creature
+        Allowed: 0
+      - Name: GameEntity
+        Allowed: 0
+      - Name: StaticGameObject
+        Allowed: 0
+      - Name: AssetManager
         Allowed: 0
       - Name: Manager
         Allowed: 0
@@ -1962,21 +1968,45 @@ MonoBehaviour:
         Allowed: 0
       - Name: Package
         Allowed: 0
+      - Name: LocalizationPack
+        Allowed: 0
       - Name: LevelMaker
         Allowed: 0
       - Name: LevelManager
         Allowed: 0
-      - Name: Creature
-        Allowed: 0
-      - Name: InternalWork
+      - Name: LocalizationUser
         Allowed: 0
       - Name: ModStarter
         Allowed: 0
       - Name: Preset
         Allowed: 0
+      - Name: ActionManager
+        Allowed: 0
+      - Name: ActionToken
+        Allowed: 0
+      - Name: InteruptableEffect
+        Allowed: 0
+      - Name: DefensiveAction
+        Allowed: 0
+      - Name: MovementAction
+        Allowed: 0
+      - Name: EffectAction
+        Allowed: 0
+      - Name: ChooseToken
+        Allowed: 0
+      - Name: ChooseResult
+        Allowed: 0
+      - Name: ChooseVisualize
+        Allowed: 0
+      - Name: OffensiveAction
+        Allowed: 0
+      - Name: Projectile
+        Allowed: 0
       - Name: Card
         Allowed: 0
-      - Name: Effector
+      - Name: ClassHolder
+        Allowed: 0
+      - Name: CardPreset
         Allowed: 0
       - Name: EffectHolder
         Allowed: 0
@@ -1998,7 +2028,9 @@ MonoBehaviour:
         Allowed: 0
       - Name: ObjectUtils
         Allowed: 0
-      - Name: PresetMaker
+      - Name: InputManager
+        Allowed: 0
+      - Name: VirMouse
         Allowed: 0
       - Name: ChatController
         Allowed: 0
@@ -2008,7 +2040,7 @@ MonoBehaviour:
         Allowed: 0
       Allowed: 0
       <ReferenceAssemblyAsset>k__BackingField: {fileID: 11400000, guid: 8d583f2cda1f96e47808b90cf1f898bd, type: 2}
-      <LastWriteTimeUTC>k__BackingField: 134137418227016899
+      <LastWriteTimeUTC>k__BackingField: 134159921326871093
     - Name: RoslynCSharp.MazeDemo
       NamedTypeRestrictions:
       - Name: dotnow.Interop
@@ -5105,7 +5137,7 @@ MonoBehaviour:
       RootTypeRestrictions: []
       Allowed: 0
       <ReferenceAssemblyAsset>k__BackingField: {fileID: 11400000, guid: af6cdaac4795dea48ae3a2dabd9b20aa, type: 2}
-      <LastWriteTimeUTC>k__BackingField: 134137425294156598
+      <LastWriteTimeUTC>k__BackingField: 134140895777539735
     - Name: Unity.InputSystem
       NamedTypeRestrictions:
       - Name: Unity.XR.OpenVR
@@ -5293,10 +5325,6 @@ MonoBehaviour:
         Allowed: 0
       - Name: UnityEngine.InputSystem.XR
         TypeRestrictions:
-        - Name: PoseState
-          Allowed: 0
-        - Name: PoseControl
-          Allowed: 0
         - Name: XRHMD
           Allowed: 0
         - Name: XRController
@@ -5782,7 +5810,7 @@ MonoBehaviour:
       RootTypeRestrictions: []
       Allowed: 0
       <ReferenceAssemblyAsset>k__BackingField: {fileID: 11400000, guid: 51b952f413904594a8c63a907252312e, type: 2}
-      <LastWriteTimeUTC>k__BackingField: 134137395962910561
+      <LastWriteTimeUTC>k__BackingField: 134154659032813015
     - Name: Unity.Mathematics
       NamedTypeRestrictions:
       - Name: Unity.Mathematics
@@ -5946,7 +5974,7 @@ MonoBehaviour:
       RootTypeRestrictions: []
       Allowed: 0
       <ReferenceAssemblyAsset>k__BackingField: {fileID: 11400000, guid: ca140a259c6c8864a8eb11cac512b19e, type: 2}
-      <LastWriteTimeUTC>k__BackingField: 134137408814117861
+      <LastWriteTimeUTC>k__BackingField: 134140895777454878
     - Name: Unity.TextMeshPro
       NamedTypeRestrictions:
       - Name: UnityEngine.TextCore
@@ -6191,7 +6219,7 @@ MonoBehaviour:
       RootTypeRestrictions: []
       Allowed: 0
       <ReferenceAssemblyAsset>k__BackingField: {fileID: 11400000, guid: c771eda1d6de8604eb46606d19a3c332, type: 2}
-      <LastWriteTimeUTC>k__BackingField: 134137408814213595
+      <LastWriteTimeUTC>k__BackingField: 134140895777539735
     - Name: Unity.Timeline
       NamedTypeRestrictions:
       - Name: UnityEngine.Timeline
@@ -6296,7 +6324,7 @@ MonoBehaviour:
       RootTypeRestrictions: []
       Allowed: 0
       <ReferenceAssemblyAsset>k__BackingField: {fileID: 11400000, guid: 1022a5b72b4d4db4785dc9df9f0414d9, type: 2}
-      <LastWriteTimeUTC>k__BackingField: 134137425284145964
+      <LastWriteTimeUTC>k__BackingField: 134140895777554858
     - Name: UnityEngine.AIModule
       NamedTypeRestrictions:
       - Name: UnityEngine.Experimental.AI
@@ -6617,70 +6645,113 @@ MonoBehaviour:
       NamedTypeRestrictions:
       - Name: UnityEngine
         TypeRestrictions:
-        - Name: AudioBehaviour
-          Allowed: 0
-        - Name: AudioChorusFilter
-          Allowed: 0
-        - Name: AudioClip
-          Allowed: 0
-        - Name: AudioClipLoadType
-          Allowed: 0
-        - Name: AudioCompressionFormat
-          Allowed: 0
-        - Name: AudioConfiguration
-          Allowed: 0
-        - Name: AudioDataLoadState
-          Allowed: 0
-        - Name: AudioDistortionFilter
-          Allowed: 0
-        - Name: AudioEchoFilter
-          Allowed: 0
-        - Name: AudioHighPassFilter
-          Allowed: 0
-        - Name: AudioListener
-          Allowed: 0
-        - Name: AudioLowPassFilter
-          Allowed: 0
-        - Name: AudioRenderer
-          Allowed: 0
-        - Name: AudioReverbFilter
-          Allowed: 0
-        - Name: AudioReverbPreset
-          Allowed: 0
-        - Name: AudioReverbZone
-          Allowed: 0
-        - Name: AudioRolloffMode
-          Allowed: 0
         - Name: AudioSettings
           Allowed: 0
         - Name: AudioSource
           Allowed: 0
-        - Name: AudioSourceCurveType
+        - Name: AudioLowPassFilter
+          Allowed: 0
+        - Name: AudioHighPassFilter
+          Allowed: 0
+        - Name: AudioReverbFilter
           Allowed: 0
         - Name: AudioSpeakerMode
+          Allowed: 0
+        - Name: AudioExtensions
+          Allowed: 0
+        - Name: AudioDataLoadState
+          Allowed: 0
+        - Name: AudioConfiguration
+          Allowed: 0
+        - Name: AudioCompressionFormat
+          Allowed: 0
+        - Name: AudioClipLoadType
           Allowed: 0
         - Name: AudioVelocityUpdateMode
           Allowed: 0
         - Name: FFTWindow
           Allowed: 0
+        - Name: AudioRolloffMode
+          Allowed: 0
+        - Name: AudioSourceCurveType
+          Allowed: 0
         - Name: GamepadSpeakerOutputType
+          Allowed: 0
+        - Name: AudioReverbPreset
+          Allowed: 0
+        - Name: AudioSpatialExperience
+          Allowed: 0
+        - Name: AudioClip
+          Allowed: 0
+        - Name: AudioBehaviour
+          Allowed: 0
+        - Name: AudioListener
+          Allowed: 0
+        - Name: AudioReverbZone
+          Allowed: 0
+        - Name: AudioDistortionFilter
+          Allowed: 0
+        - Name: AudioEchoFilter
+          Allowed: 0
+        - Name: AudioChorusFilter
           Allowed: 0
         - Name: Microphone
           Allowed: 1
+        - Name: AudioRenderer
+          Allowed: 0
         - Name: MovieTexture
-          Allowed: 1
-        - Name: WebCamDevice
           Allowed: 1
         - Name: WebCamFlags
           Allowed: 1
         - Name: WebCamKind
           Allowed: 1
+        - Name: WebCamDevice
+          Allowed: 1
         - Name: WebCamTexture
           Allowed: 1
         Allowed: 0
+      - Name: UnityEngine.Experimental.Audio
+        TypeRestrictions:
+        - Name: AudioSampleProvider
+          Allowed: 0
+        Allowed: 0
       - Name: UnityEngine.Audio
         TypeRestrictions:
+        - Name: AudioFormat
+          Allowed: 0
+        - Name: ChannelBuffer
+          Allowed: 0
+        - Name: MessageExtensions
+          Allowed: 0
+        - Name: ControlContext
+          Allowed: 0
+        - Name: DSPConfiguration
+          Allowed: 0
+        - Name: IGeneratorDefinition
+          Allowed: 0
+        - Name: GeneratorInstance
+          Allowed: 0
+        - Name: Generator
+          Allowed: 0
+        - Name: ProcessorInstance
+          Allowed: 0
+        - Name: Processor
+          Allowed: 0
+        - Name: ProcessingContext
+          Allowed: 0
+        - Name: IAudioScriptingContext
+          Allowed: 0
+        - Name: RootOutputInstance
+          Allowed: 0
+        - Name: RealtimeContext
+          Allowed: 0
+        - Name: IAudioGenerator
+          Allowed: 0
+        - Name: AudioResource
+          Allowed: 0
         - Name: AudioClipPlayable
+          Allowed: 0
+        - Name: AudioMixerUpdateMode
           Allowed: 0
         - Name: AudioMixer
           Allowed: 0
@@ -6690,24 +6761,15 @@ MonoBehaviour:
           Allowed: 0
         - Name: AudioMixerSnapshot
           Allowed: 0
-        - Name: AudioMixerUpdateMode
-          Allowed: 0
         - Name: AudioPlayableBinding
           Allowed: 0
         - Name: AudioPlayableOutput
-          Allowed: 0
-        - Name: AudioResource
-          Allowed: 0
-        Allowed: 0
-      - Name: UnityEngine.Experimental.Audio
-        TypeRestrictions:
-        - Name: AudioSampleProvider
           Allowed: 0
         Allowed: 0
       RootTypeRestrictions: []
       Allowed: 0
       <ReferenceAssemblyAsset>k__BackingField: {fileID: 11400000, guid: ad341c685a1655146b4271e43c99b160, type: 2}
-      <LastWriteTimeUTC>k__BackingField: 133971406040000000
+      <LastWriteTimeUTC>k__BackingField: 134128091420000000
     - Name: UnityEngine.ClothModule
       NamedTypeRestrictions:
       - Name: UnityEngine

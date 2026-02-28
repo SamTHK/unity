@@ -140,7 +140,8 @@ public class PresetMakerEditor : Editor
         }
         maker.variables[index] = variables;
     }
-    public List<string> ListVisualizer(List<string> list)
+    
+    private List<string> ListVisualizer(List<string> list)
     {
         List<string> visualizers = new List<string>(list);
 

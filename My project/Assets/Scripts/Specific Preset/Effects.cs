@@ -1,12 +1,15 @@
+using Febucci.UI.Examples;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using static UnityEngine.Rendering.GPUSort;
 
 
-public class Condition : InternalWork
+public class Condition 
 {
-    
-    public virtual bool Proc(string proc, string[] variables, List<EffectPair> chain, EffectPair owner, List<object> args)
+    public virtual async Task<bool> Proc(string proc, string[] variables, List<EffectPair> chain, EffectPair owner, List<object> args)
     {
         if (chain.Contains(owner))
         {
@@ -15,9 +18,9 @@ public class Condition : InternalWork
         return true;
     }
 }
-public class Effect : InternalWork
+public class Effect 
 {
-    public virtual void Proc(string proc, string[] variables, List<EffectPair> chain, EffectPair owner, List<object> args)
+    public async virtual Task Proc(string proc, string[] variables, List<EffectPair> chain, EffectPair owner, List<object> args)
     {
 
     }
@@ -25,55 +28,74 @@ public class Effect : InternalWork
 
 public class EffectPair
 {
-    public bool base_effect { get; private set; }
-    public Effect effect { get; private set; }
-    public Condition condition { get; private set; }
-    public EffectHolder holder;
 
-    public string[] firstproc { get; private set; }
-    public string[] cVariables { get; private set; }
-    public string[] eVariables { get; private set; }
+    public Effect effect { get; protected set; }
+    public Condition condition { get; protected set; }
+    public EffectHolder holder { get; protected set; }
 
-    public EffectPair(bool base_effect, EffectHolder holder, EffectPreset effect, ConditionPreset condition)
+    public bool defaultEffect { get; protected set; }
+    public string[] firstproc { get; protected set; }
+    public string[] cVariables { get; protected set; }
+    public string[] eVariables { get; protected set; }
+
+    public EffectPair(EffectHolder holder, EffectPreset effect, ConditionPreset condition, bool defaultEffect = false )
     {
-        this.base_effect = base_effect;
+        this.defaultEffect = defaultEffect;
         this.holder = holder;
 
         firstproc = condition.firstproc;
 
         AssetManager aS = ObjectUtils.AssetManager;
-        if (condition.basecondition == "default")
+        if (condition.basecondition == "")
         {
             this.condition = new Condition();
         }
         else
         {
             this.condition = aS.LoadInternalWork<Condition>(condition.basecondition);
+            cVariables = condition.variables;
         }
 
-        this.effect = aS.LoadInternalWork<Effect>(effect.baseeffect);
-
-    }
-
-    public void Proc(string proc, List<EffectPair> chain, List<object> args)
-    {
-        string proc_optimized = EffectsUtils.StandardString(proc);
-        if (condition.Proc(proc_optimized, cVariables, chain, this, args))
+        if (condition.basecondition == "")
         {
-            List<EffectPair> new_chain;
-            if (chain != null)
-            {
-                new_chain = new List<EffectPair>(chain);
-            }
-            else
-            {
-                new_chain = new List<EffectPair>();
-            }    
-            effect.Proc(proc_optimized, eVariables, new_chain, this, args);
+            this.effect = null;
+            
         }
+        else
+        {
+            this.effect = aS.LoadInternalWork<Effect>(effect.baseeffect);
+
+        }
+
+        eVariables = effect.variables;
+
     }
+
+
+    public async Task Proc(string proc, List<EffectPair> chain, List<object> args)
+    {
+       
+            string proc_optimized = EffectsUtils.StandardString(proc);
+            if (await condition.Proc(proc_optimized, cVariables, chain, this, args))
+            {
+                List<EffectPair> new_chain;
+                if (chain != null)
+                {
+                    new_chain = new List<EffectPair>(chain);
+                }
+                else
+                {
+                    new_chain = new List<EffectPair>();
+                }
+                await effect.Proc(proc_optimized, eVariables, new_chain, this, args);
+            }
+        
+    }
+
     
 }
+
+
 
 [Serializable]
 public class EffectPreset : Preset

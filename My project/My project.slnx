@@ -8,6 +8,6 @@
   <Project Path="RoslynCSharp.csproj" />
   <Project Path="Febucci.TextAnimator.TMP.Runtime.csproj" />
   <Project Path="Febucci.TextAnimator.Demo.Runtime.csproj" />
-  <Project Path="Febucci.Attributes.Runtime.csproj" />
   <Project Path="Assembly-CSharp-Editor.csproj" />
+  <Project Path="Febucci.Attributes.Runtime.csproj" />
 </Solution>

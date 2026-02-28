@@ -3,7 +3,7 @@
 using NUnit.Framework;
 using System.Collections.Generic;
 
-public class LevelPreset : InternalWork
+public class LevelPreset
 {
     public string mapID;
     public string name;
