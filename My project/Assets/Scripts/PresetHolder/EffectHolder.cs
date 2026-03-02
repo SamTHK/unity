@@ -38,13 +38,26 @@ public class EffectHolder
         }
     }
 
-   
+
     public async Task FullProc(string proc, List<EffectPair> chain, List<object> arg)
     {
         await GlobalProc(proc, chain, arg);
         await Proc(proc, chain, arg);
     }
-    
+
+    public virtual async Task SpecificFullProc(string proc, List<EffectPair> chain, List<object> arg)
+    {
+        await Proc(proc, chain, arg);   
+    }
+
+    public virtual async Task SpecificFullDelayProc(string proc, List<EffectPair> chain, DelayAction action, int action_position = 0, List<object> arg = null)
+    {
+        await Proc(proc, chain, arg);
+        if (arg == null) { arg = new List<object>(); }
+        arg.Insert(action_position, action);
+        await Proc(proc, chain, arg);
+        await action.Run();
+    }
 
     public async Task GlobalProc(string proc, List<EffectPair> chain, List<object> arg)
     {

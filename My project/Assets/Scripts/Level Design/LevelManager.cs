@@ -43,7 +43,7 @@ public class LevelManager : MonoBehaviour
 
 
 
-            TempTest();
+            CheckActions();
         }
     }
 
@@ -179,9 +179,9 @@ public class LevelManager : MonoBehaviour
     public List<ActionToken> ActionTokens;
     public List<ChooseToken> ChooseTokens;
 
-    private void CheckActions()
+    private async void CheckActions()
     {
-        if (chooseDoing == null)
+        if (chooseDoing == null && actionDoing == null)
         { 
             if (ActionTokens.Count > 0)
             {
@@ -191,7 +191,9 @@ public class LevelManager : MonoBehaviour
                     OnTurnAction oTA = (OnTurnAction)first;
                     if ( oTA.chooseTokenUsage == -1)
                     {
-                        oTA.Activate(this);
+                        actionDoing = oTA;
+                        returnable = false;
+                        await oTA.Activate(this);
                     }
                     else if (ChooseTokens[oTA.chooseTokenUsage].result != null || oTA.forceRechoose)
                     {
@@ -200,13 +202,27 @@ public class LevelManager : MonoBehaviour
                         {
                             chooseDoing.center = cardPlaying.player.position;
                         }    
-                        chooseDoing.Visualize(this);
+                        await chooseDoing.Visualize(this);
+
+                        actionDoing = oTA;
+                        returnable = false;
+                        await oTA.Activate(this);
                     }    
+                    else
+                    {
+                        actionDoing = oTA;
+                        returnable = false;
+                        await oTA.Activate(this);
+                        
+                    }
                 }
                 else
                 {
-                    first.Activate(this);
+                    actionDoing = first;
                     returnable = false;
+                    await first.Activate(this);
+
+              
                 }    
             }
             else if (!playable)
@@ -217,7 +233,7 @@ public class LevelManager : MonoBehaviour
                 playable = true;
                 if (cardPlaying != null)
                 {
-                    cardPlaying.CardFullProc("cardend", null, new List<object>() { cardPlaying });
+                    cardPlaying.SpecificFullProc("cardend", null, new List<object>() { cardPlaying });
                     cardPlaying = null;
                 }
                 
@@ -234,7 +250,7 @@ public class LevelManager : MonoBehaviour
 
         ParseAction parseAction = new(this, card.actions, card.choices);
         List<object> o = EffectsUtils.ObjectList(arg, card);
-        await card.CardFullDelayProc("parseaction", chain, parseAction, 1, o);
+        await card.SpecificFullDelayProc("addactions", chain, parseAction, 1, o);
         
 
         if (ActionTokens.Count > 0)
@@ -247,7 +263,7 @@ public class LevelManager : MonoBehaviour
         returnable = true;
     }
 
-    public void AddAction(int action_index, ActionToken action)
+ /*   public void AddAction(int action_index, ActionToken action)
     {
         playable = false;
         returnable = true;
@@ -265,7 +281,7 @@ public class LevelManager : MonoBehaviour
             }
         }
       
-    }
+    }*/
 
     
 

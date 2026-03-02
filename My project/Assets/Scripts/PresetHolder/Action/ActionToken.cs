@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 public abstract class ActionToken : EffectHolder
 {
@@ -23,7 +24,7 @@ public abstract class ActionToken : EffectHolder
         type = EffectHolderType.Action;
     }
 
-    public virtual void Activate(LevelManager man)
+    public async virtual Task Activate(LevelManager man)
     {
 
     }

@@ -15,13 +15,13 @@ public class Card : EffectHolder
     public List<ActionToken> actions { get; protected set; }
     public List<ChooseToken> choices { get; protected set; }
 
-    public async Task CardFullProc(string proc, List<EffectPair> chain, List<object> arg)
+    public override async Task SpecificFullProc(string proc, List<EffectPair> chain, List<object> arg)
     {
         await FullProc(proc, chain, arg);
         await player.Proc(proc, chain, arg);
     }
 
-    public async Task CardFullDelayProc(string proc, List<EffectPair> chain, DelayAction action, int action_position = 0, List<object> arg = null)
+    public override async Task SpecificFullDelayProc(string proc, List<EffectPair> chain, DelayAction action, int action_position = 0, List<object> arg = null)
     {
         if (arg == null) { arg = new List<object>(); }
         arg.Insert(action_position, action);
