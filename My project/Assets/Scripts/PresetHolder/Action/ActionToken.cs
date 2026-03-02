@@ -5,7 +5,9 @@ using System.Text;
 public abstract class ActionToken : EffectHolder
 {
     public ActionType actiontype { get; protected set; }
-    public int chooseTokenUsage;
+
+    public EffectHolder holder;
+    public GameEntity entity;
 
     public enum ActionType
     {
@@ -21,10 +23,17 @@ public abstract class ActionToken : EffectHolder
         type = EffectHolderType.Action;
     }
 
+    public virtual void Activate(LevelManager man)
+    {
+
+    }
+
 }
 
-public class InteruptableEffect
+public class OnTurnAction : ActionToken
 {
+    public int chooseTokenUsage;
+    public bool forceRechoose;
 
 }
 
@@ -34,14 +43,14 @@ public class DefensiveAction : ActionToken
 }
 
 
-public class MovementAction : ActionToken
+public class MovementAction : OnTurnAction
 {
 
 }
 
 
 
-public class EffectAction : ActionToken
+public class EffectAction : OnTurnAction
 {
 
 }

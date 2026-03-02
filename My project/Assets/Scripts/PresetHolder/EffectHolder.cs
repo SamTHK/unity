@@ -39,14 +39,6 @@ public class EffectHolder
     }
 
    
-    public async Task DelayProc(string proc, List<EffectPair> chain, DelayAction action, List<object> arg)
-    {
-        arg.Insert(0, action);
-        await GlobalProc(proc, chain, arg);
-        await Proc(proc, chain, arg);
-        await action.Run();
-    }
-
     public async Task FullProc(string proc, List<EffectPair> chain, List<object> arg)
     {
         await GlobalProc(proc, chain, arg);
@@ -64,7 +56,7 @@ public class EffectHolder
 
  
 
-    public async Task AddEffectPreset(string defaultname, string effect, string condition, List<EffectPair> chain, object[] arg)
+    public async Task AddEffectPreset(string defaultname, string effect, string condition, List<EffectPair> chain, params object[] arg)
     {
         AssetManager a = ObjectUtils.AssetManager;
         EffectPreset efPr = await a.LoadPresetAsync<EffectPreset>(effect);
@@ -85,7 +77,7 @@ public class EffectHolder
         await FullProc("EffectAdded", chain, EffectsUtils.ObjectList(arg, eP));
     }
 
-    public async Task AddEffect(string defaultname, string effect, string condition, List<EffectPair> chain, object[] arg)
+    public async Task AddEffect(string defaultname, string effect, string condition, List<EffectPair> chain, params object[] arg)
     {
         AssetManager a = ObjectUtils.AssetManager;
         EffectPreset efPr = JsonUtility.FromJson<EffectPreset>(effect);
@@ -106,7 +98,7 @@ public class EffectHolder
         await FullProc("EffectAdded", chain, EffectsUtils.ObjectList(arg, eP));
     }
 
-    public async Task AddEffectPreset(string effect, string condition, List<EffectPair> chain, object[] arg)
+    public async Task AddEffectPreset(string effect, string condition, List<EffectPair> chain, params object[] arg)
     {
         AssetManager a = ObjectUtils.AssetManager;
         EffectPreset efPr = await a.LoadPresetAsync<EffectPreset>(effect);
@@ -126,7 +118,7 @@ public class EffectHolder
         await FullProc("EffectAdded", chain, EffectsUtils.ObjectList(arg, eP));
     }
 
-    public async Task AddEffect(string effect, string condition, List<EffectPair> chain, object[] arg)
+    public async Task AddEffect(string effect, string condition, List<EffectPair> chain, params object[] arg)
     {
         AssetManager a = ObjectUtils.AssetManager;
         EffectPreset efPr = JsonUtility.FromJson<EffectPreset>(effect);

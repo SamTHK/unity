@@ -33,15 +33,18 @@ public class EffectPair
     public Condition condition { get; protected set; }
     public EffectHolder holder { get; protected set; }
 
+    public string name { get; protected set; }
     public bool defaultEffect { get; protected set; }
     public string[] firstproc { get; protected set; }
-    public string[] cVariables { get; protected set; }
-    public string[] eVariables { get; protected set; }
+
+    public string[] cVariables;
+    public string[] eVariables;
 
     public EffectPair(EffectHolder holder, EffectPreset effect, ConditionPreset condition, bool defaultEffect = false )
     {
         this.defaultEffect = defaultEffect;
         this.holder = holder;
+        name = effect.filename;
 
         firstproc = condition.firstproc;
 

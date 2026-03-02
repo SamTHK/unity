@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Tilemaps;
@@ -24,6 +25,8 @@ public class LevelManager : MonoBehaviour
         default_bullet["wall"] = 1;
         default_bullet["entity"] = 1;
         default_walk["tiny"] = -1;
+        playable = true;
+
     }
 
     public void Update()
@@ -169,81 +172,102 @@ public class LevelManager : MonoBehaviour
     #endregion
 
     #region action
-    public bool returnable;
+    public bool returnable, playable;
     public Card cardPlaying;
     public ActionToken actionDoing;
-    public ChooseToken chooseToken;
-    public List<ActionToken> List;
-    public List<ChooseToken> Choices;
+    public ChooseToken chooseDoing;
+    public List<ActionToken> ActionTokens;
+    public List<ChooseToken> ChooseTokens;
 
-
-
-    public void ParseActions(Card card)
+    private void CheckActions()
     {
-        List.Clear();
-        Choices.Clear();
+        if (chooseDoing == null)
+        { 
+            if (ActionTokens.Count > 0)
+            {
+                ActionToken first = ActionTokens[0];
+                if (ActionTokens[0] is OnTurnAction)
+                {
+                    OnTurnAction oTA = (OnTurnAction)first;
+                    if ( oTA.chooseTokenUsage == -1)
+                    {
+                        oTA.Activate(this);
+                    }
+                    else if (ChooseTokens[oTA.chooseTokenUsage].result != null || oTA.forceRechoose)
+                    {
+                        chooseDoing = ChooseTokens[oTA.chooseTokenUsage];
+                        if (cardPlaying != null)
+                        {
+                            chooseDoing.center = cardPlaying.player.position;
+                        }    
+                        chooseDoing.Visualize(this);
+                    }    
+                }
+                else
+                {
+                    first.Activate(this);
+                    returnable = false;
+                }    
+            }
+            else if (!playable)
+            {
+                chooseDoing = null;
+                returnable = true;
+                ChooseTokens.Clear();
+                playable = true;
+                if (cardPlaying != null)
+                {
+                    cardPlaying.CardFullProc("cardend", null, new List<object>() { cardPlaying });
+                    cardPlaying = null;
+                }
+                
+            }
+        }
+    }    
 
-        foreach (ActionToken a in card.actions)
+    public async void ParseActions(Card card, List<EffectPair> chain, params object[] arg)
+    {
+        cardPlaying = card;
+        ActionTokens.Clear();
+        ChooseTokens.Clear();
+
+
+        ParseAction parseAction = new(this, card.actions, card.choices);
+        List<object> o = EffectsUtils.ObjectList(arg, card);
+        await card.CardFullDelayProc("parseaction", chain, parseAction, 1, o);
+        
+
+        if (ActionTokens.Count > 0)
         {
-            List.Add(a);
+            actionDoing = null;
+            chooseDoing = null;
         }
 
-        foreach (ChooseToken a in card.choices)
-        {
-            Choices.Add(a);
-        }
-
-        if (List.Count > 0)
-        {
-            actionDoing = List[0];
-            chooseToken = null;
-        }
+        playable = false;
+        returnable = true;
     }
 
-    public void AddAction(int action_index, ActionToken action, ChooseToken choice = null)
+    public void AddAction(int action_index, ActionToken action)
     {
+        playable = false;
+        returnable = true;
         if (action_index >= 0)
         {
-            List.Insert(action_index, action);
+            ActionTokens.Insert(action_index, action);
 
         }
         else
         {
-            int i = List.Count + 1 - action_index;
+            int i = ActionTokens.Count + 1 - action_index;
             if (i >= 0)
             {
-                List.Insert(i, action);
+                ActionTokens.Insert(i, action);
             }
         }
-        AttachChoices(action, choice);
+      
     }
 
-    public void AttachChoices(ActionToken action, int choices_index)
-    {
-
-        if (choices_index >= 0)
-        {
-            action.chooseTokenUsage = choices_index;
-
-        }
-        else
-        {
-            int i = Choices.Count + 1 - choices_index;
-            if (i >= 0)
-            {
-                action.chooseTokenUsage = i;
-            }
-        }
-
-    }
-
-    public void AttachChoices(ActionToken action, ChooseToken choice)
-    {
-
-        Choices.Add(choice);
-        action.chooseTokenUsage = Choices.Count - 1;
-
-    }
+    
 
     #endregion
 
@@ -296,17 +320,8 @@ public class LevelManager : MonoBehaviour
             Mathf.Abs(d.y) == Mathf.Abs(d.z) && d.x == 0;
     }
 
-    public void RotateChoose()
-    {
-        if (rotate < maxrotate)
-        {
-            rotate += 1;
-        }
-        else
-        {
-            rotate = 0;
-        }
-    }
+    
+    
     public Vector3Int MouseToCell()
     {
         Vector2 pointValue = pointAction.ReadValue<Vector2>();

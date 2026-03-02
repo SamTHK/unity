@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 
 
-public class OffensiveAction : ActionToken
+public class OffensiveAction : OnTurnAction
 {
     public int minRoll, maxRoll;
 
@@ -18,6 +18,8 @@ public class OffensiveAction : ActionToken
 
     }
 }
+
+
 public class Projectile
 {
     

@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public class GameEntity : MonoBehaviour
@@ -8,6 +9,14 @@ public class GameEntity : MonoBehaviour
 
     public List<string> tags = new();
     public string Oname;
+    public Vector3Int position;
+    public int health {  get; protected set; }
+
+
+    public async Task Proc(string proc, List<EffectPair> chain, List<object> arg)
+    {
+
+    }    
 
     protected virtual void Start()
     {

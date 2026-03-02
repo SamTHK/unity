@@ -5,7 +5,16 @@ public static class EffectsUtils
 {
     public static List<object> ObjectList(object[] objects, params object[] param)
     {
-        List<object> list = objects.ToList();
+        List<object> list;
+        if (objects == null)
+        {
+            list = new();
+        }
+        else
+        {
+            list = objects.ToList();
+        }
+
         for (int i = 0; i < param.Length; i++)
         {
             list.Insert(i, param[i]);

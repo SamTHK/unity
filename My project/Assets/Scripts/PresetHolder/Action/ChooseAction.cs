@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Threading.Tasks;
+using UnityEngine;
 
 public class ChooseToken : ICloneable
 {
-    public bool returnable;
+    public string Name { get; protected set; }
+    public int size, range, targets;
     public ChooseResult result;
+    public Vector3Int center;
 
     public async virtual Task<ChooseResult> Visualize(LevelManager man)
     {
