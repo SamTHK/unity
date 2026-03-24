@@ -9,10 +9,11 @@ public class DelayAction
 {
     public string name;
     public List<Pair<Func<DelayAction, Task>, int>> function_list = new();
+    public bool ran;
 
-    protected async virtual Task DefaultRun()
+    protected async virtual Task<bool> DefaultRun()
     {
-
+        return true;
     }
 
     public void AddFunc(Func<DelayAction, Task> func, int priority)
@@ -44,7 +45,13 @@ public class DelayAction
             }
             else 
             {
-                await DefaultRun();
+                if (!(await DefaultRun()))
+                {
+                    this.ran = false;
+                    return;
+                } 
+                this.ran = true;
+                ran = true;
             }    
         }    
     }

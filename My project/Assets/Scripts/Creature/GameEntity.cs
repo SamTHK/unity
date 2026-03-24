@@ -13,7 +13,7 @@ public class GameEntity : MonoBehaviour
     public int health {  get; protected set; }
 
 
-    public async Task Proc(string proc, List<EffectPair> chain, List<object> arg)
+    public async Task Proc(string proc, List<EffectHolder> chain, object[] arg)
     {
 
     }    

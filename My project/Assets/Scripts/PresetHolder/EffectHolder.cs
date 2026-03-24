@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Unity.Burst.Intrinsics;
 using Unity.Serialization.Json;
 using UnityEngine;
+using static UnityEngine.Rendering.GPUSort;
 
 
 
@@ -27,7 +29,47 @@ public class EffectHolder
     {
         type = EffectHolderType.Level;
     }
-    public async Task Proc(string proc, List<EffectPair> chain, List<object> arg)
+    #region overload
+    public async Task Proc(EffectsUtils.Proc procname, List<EffectHolder> chain, params object[] arg)
+    {
+        string proc = EffectsUtils.procname[procname];
+        if (effects[proc] != null)
+        {
+            for (int i = 0; i < effects[proc].Count; i++)
+            {
+                await effects[proc][i].Proc(proc, chain, arg);
+            }
+        }
+    }
+   
+    public async Task FullProc(EffectsUtils.Proc procname, List<EffectHolder> chain, params object[] arg)
+    {
+        string proc = EffectsUtils.procname[procname];
+        await GlobalProc(proc, chain, arg);
+        await Proc(proc, chain, arg);
+    }
+
+    public virtual async Task SpecificFullProc(EffectsUtils.Proc procname, List<EffectHolder> chain, params object[] arg)
+    {
+        string proc = EffectsUtils.procname[procname];
+        await FullProc(proc, chain, arg);
+    }
+
+    public virtual async Task SpecificFullDelayProc(EffectsUtils.Proc procname, List<EffectHolder> chain, DelayAction action, int action_position, params object[] arg)
+    {
+        string proc = EffectsUtils.procname[procname];
+        if (arg == null) { arg = new object[1] { action }; } else { arg = EffectsUtils.ObjectList(arg, action_position, action); }
+
+        await Proc(proc, chain, arg);
+        await action.Run();
+    }
+
+
+
+    #endregion
+
+
+    public async Task Proc(string proc, List<EffectHolder> chain, object[] arg)
     {
         if (effects[proc] != null)
         {
@@ -39,27 +81,26 @@ public class EffectHolder
     }
 
 
-    public async Task FullProc(string proc, List<EffectPair> chain, List<object> arg)
+    public async Task FullProc(string proc, List<EffectHolder> chain,  params object[] arg)
     {
         await GlobalProc(proc, chain, arg);
         await Proc(proc, chain, arg);
     }
 
-    public virtual async Task SpecificFullProc(string proc, List<EffectPair> chain, List<object> arg)
+    public virtual async Task SpecificFullProc(string proc, List<EffectHolder> chain, params object[] arg)
     {
-        await Proc(proc, chain, arg);   
+        await FullProc(proc, chain, arg);   
     }
 
-    public virtual async Task SpecificFullDelayProc(string proc, List<EffectPair> chain, DelayAction action, int action_position = 0, List<object> arg = null)
+    public virtual async Task SpecificFullDelayProc(string proc, List<EffectHolder> chain, DelayAction action, int action_position, params object[] arg)
     {
-        await Proc(proc, chain, arg);
-        if (arg == null) { arg = new List<object>(); }
-        arg.Insert(action_position, action);
+        if (arg == null) { arg = new object[1] { action }; } else { arg = EffectsUtils.ObjectList(arg, action_position, action);  }
+        
         await Proc(proc, chain, arg);
         await action.Run();
     }
 
-    public async Task GlobalProc(string proc, List<EffectPair> chain, List<object> arg)
+    protected async Task GlobalProc(string proc, List<EffectHolder> chain, params object[] arg)
     {
         if (type != EffectHolderType.Level)
         {
@@ -69,7 +110,7 @@ public class EffectHolder
 
  
 
-    public async Task AddEffectPreset(string defaultname, string effect, string condition, List<EffectPair> chain, params object[] arg)
+    public async Task AddEffectPreset(string defaultname, string effect, string condition, List<EffectHolder> chain,  object[] arg)
     {
         AssetManager a = ObjectUtils.AssetManager;
         EffectPreset efPr = await a.LoadPresetAsync<EffectPreset>(effect);
@@ -87,10 +128,10 @@ public class EffectHolder
         }
         defaulteffects[defaultname] = eP;
 
-        await FullProc("EffectAdded", chain, EffectsUtils.ObjectList(arg, eP));
+        await FullProc("effectadded", chain, eP);
     }
 
-    public async Task AddEffect(string defaultname, string effect, string condition, List<EffectPair> chain, params object[] arg)
+    public async Task AddEffect(string defaultname, string effect, string condition, List<EffectHolder> chain)
     {
         AssetManager a = ObjectUtils.AssetManager;
         EffectPreset efPr = JsonUtility.FromJson<EffectPreset>(effect);
@@ -108,10 +149,10 @@ public class EffectHolder
         }
         defaulteffects[defaultname] = eP;
 
-        await FullProc("EffectAdded", chain, EffectsUtils.ObjectList(arg, eP));
+        await FullProc("effectadded", chain,  eP);
     }
 
-    public async Task AddEffectPreset(string effect, string condition, List<EffectPair> chain, params object[] arg)
+    public async Task AddEffectPreset(string effect, string condition, List<EffectHolder> chain)
     {
         AssetManager a = ObjectUtils.AssetManager;
         EffectPreset efPr = await a.LoadPresetAsync<EffectPreset>(effect);
@@ -128,10 +169,10 @@ public class EffectHolder
             effects[proc].Add(eP);
         }
 
-        await FullProc("EffectAdded", chain, EffectsUtils.ObjectList(arg, eP));
+        await FullProc("effectadded", chain, eP);
     }
 
-    public async Task AddEffect(string effect, string condition, List<EffectPair> chain, params object[] arg)
+    public async Task AddEffect(string effect, string condition, List<EffectHolder> chain, params object[] arg)
     {
         AssetManager a = ObjectUtils.AssetManager;
         EffectPreset efPr = JsonUtility.FromJson<EffectPreset>(effect);
@@ -148,10 +189,10 @@ public class EffectHolder
             effects[proc].Add(eP);
         }
 
-        await FullProc("EffectAdded", chain, EffectsUtils.ObjectList(arg, eP));
+        await FullProc("effectadded", chain, eP);
     }
 
-    public async Task RemoveDefaultEffect(string defaultname, List<EffectPair> chain, params object[] arg)
+    public async Task RemoveDefaultEffect(string defaultname, List<EffectHolder> chain, params object[] arg)
     {
         EffectPair effectPair = defaulteffects[defaultname];
         if (effectPair != null)
@@ -169,10 +210,10 @@ public class EffectHolder
             }
 
 
-            await FullProc("EffectRemoved", chain, EffectsUtils.ObjectList(arg, effectPair));
+            await FullProc("effectremoved", chain, effectPair);
         }
     }
-    public async Task RemoveEffect(EffectPair effectPair, List<EffectPair> chain, params object[] arg)
+    public async Task RemoveEffect(EffectPair effectPair, List<EffectHolder> chain, params object[] arg)
     {
         foreach (string key in effectPair.firstproc)
         {
@@ -186,7 +227,7 @@ public class EffectHolder
             }
         }
 
-        await FullProc("EffectRemoved", chain, EffectsUtils.ObjectList(arg, effectPair));
+        await FullProc("effectremoved", chain, effectPair);
     }
 
  

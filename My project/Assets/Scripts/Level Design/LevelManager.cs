@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Tilemaps;
@@ -50,8 +49,8 @@ public class LevelManager : MonoBehaviour
     #region init
     [SerializeField] public GameObject Opuddle, Ochoose, Orange;
     [SerializeField] TileBase tileBase;
-    public static Dictionary<string, int> default_walk = new();
-    public static Dictionary<string, int> default_bullet = new();
+    public  Dictionary<string, int> default_walk = new();
+    public  Dictionary<string, int> default_bullet = new();
     public Tilemap wallMap { get; protected set; }
     public Tilemap voidMap { get; protected set; }
     public Tilemap puddleMap { get; protected set; }
@@ -60,6 +59,8 @@ public class LevelManager : MonoBehaviour
     public Vector3Int minBound, maxBound;
     public Puddle[,] puddleGrid;
     public GameEntity[,] entityGrid;
+    public List<Puddle> puddles;
+    public List<GameEntity> entities;
 
     public enum TileType
     {
@@ -158,7 +159,7 @@ public class LevelManager : MonoBehaviour
         }
     }
 
-    public async Task Proc(string trigger, List<EffectPair> chain, List<object> arg)
+    public async Task Proc(string trigger, List<EffectHolder> chain, object[] arg)
     {
         await effect.Proc(trigger, chain, arg);
         if (Trigger[trigger] != null)
@@ -172,58 +173,66 @@ public class LevelManager : MonoBehaviour
     #endregion
 
     #region action
-    public bool returnable, playable;
+    public int turn, round;
+    public bool telegraphinguse;
+    public Creature turn_of;
+    public List<Pair<Creature, int>> creature_list;
+
+    public bool returnable, playable, running;
     public Card cardPlaying;
     public ActionToken actionDoing;
     public ChooseToken chooseDoing;
-    public List<ActionToken> ActionTokens;
-    public List<ChooseToken> ChooseTokens;
+    public Page currentPage;
+    public List<Page> pages;
+    public List<Page> previousPage;
 
     private async void CheckActions()
     {
+
+    }    
+
+    /*private async void CheckActions()
+    {
         if (chooseDoing == null && actionDoing == null)
-        { 
+        {
             if (ActionTokens.Count > 0)
             {
                 ActionToken first = ActionTokens[0];
                 if (ActionTokens[0] is OnTurnAction)
                 {
                     OnTurnAction oTA = (OnTurnAction)first;
-                    if ( oTA.chooseTokenUsage == -1)
+                    int cTU = oTA.chooseTokenUsage;
+                    
+                    if (cTU == -1 || cTU >= ChooseTokens.Count)
                     {
                         actionDoing = oTA;
                         returnable = false;
-                        await oTA.Activate(this);
+                        await oTA.TryActivate(this);
                     }
-                    else if (ChooseTokens[oTA.chooseTokenUsage].result != null || oTA.forceRechoose)
+                    else if (ChooseTokens[cTU].result != null || oTA.forceRechoose)
                     {
-                        chooseDoing = ChooseTokens[oTA.chooseTokenUsage];
-                        if (cardPlaying != null)
-                        {
-                            chooseDoing.center = cardPlaying.player.position;
-                        }    
-                        await chooseDoing.Visualize(this);
+                        chooseDoing = ChooseTokens[cTU];
+                        
+                        await chooseDoing.TryVisualize(this);
 
                         actionDoing = oTA;
                         returnable = false;
-                        await oTA.Activate(this);
-                    }    
+                        await oTA.TryActivate(this);
+                    }
                     else
                     {
                         actionDoing = oTA;
                         returnable = false;
-                        await oTA.Activate(this);
-                        
+                        await oTA.TryActivate(this);
+
                     }
                 }
                 else
                 {
                     actionDoing = first;
                     returnable = false;
-                    await first.Activate(this);
-
-              
-                }    
+                    await first.TryActivate(this);
+                }
             }
             else if (!playable)
             {
@@ -233,57 +242,63 @@ public class LevelManager : MonoBehaviour
                 playable = true;
                 if (cardPlaying != null)
                 {
-                    cardPlaying.SpecificFullProc("cardend", null, new List<object>() { cardPlaying });
+                    cardPlaying.SpecificFullProc("cardend", null, cardPlaying);
                     cardPlaying = null;
                 }
-                
+
             }
         }
-    }    
+    }*/
 
-    public async void ParseActions(Card card, List<EffectPair> chain, params object[] arg)
+    public async void ParseActions(Card card, List<EffectHolder> chain)
     {
         cardPlaying = card;
-        ActionTokens.Clear();
-        ChooseTokens.Clear();
+        pages.Clear();
 
+        CardPlayAction parseAction = new(this, card.pages, chain);
 
-        ParseAction parseAction = new(this, card.actions, card.choices);
-        List<object> o = EffectsUtils.ObjectList(arg, card);
-        await card.SpecificFullDelayProc("addactions", chain, parseAction, 1, o);
-        
+        await card.SpecificFullDelayProc("cardstart", chain, parseAction, 1, card);
 
-        if (ActionTokens.Count > 0)
-        {
-            actionDoing = null;
-            chooseDoing = null;
-        }
+        actionDoing = null;
+        chooseDoing = null;
+
 
         playable = false;
         returnable = true;
     }
-
- /*   public void AddAction(int action_index, ActionToken action)
-    {
-        playable = false;
-        returnable = true;
-        if (action_index >= 0)
-        {
-            ActionTokens.Insert(action_index, action);
-
-        }
-        else
-        {
-            int i = ActionTokens.Count + 1 - action_index;
-            if (i >= 0)
-            {
-                ActionTokens.Insert(i, action);
-            }
-        }
-      
-    }*/
-
     
+
+    public async Task AddAction(GameEntity gameEntity, EffectHolder holder, int action_index, OnTurnAction action, bool forcerechoose, List<EffectHolder> chain)
+    {
+
+        action.forceRechoose = forcerechoose;
+        await AddAction(gameEntity, holder, action_index, action, chain);
+    }
+
+    public async Task AddAction(GameEntity gameEntity, EffectHolder holder, int action_index, ActionToken action, List<EffectHolder> chain)
+    {
+        action.player = gameEntity;
+        action.holder = holder;
+        action.chain = new(chain);
+        AddActionAction aA = new(this, action, action_index);
+        await holder.SpecificFullDelayProc("addaction", chain, aA, 1, holder);
+        playable = false;
+    }
+    
+    public async Task AddPage(GameEntity gameEntity, EffectHolder holder, int page_index, Page page, List<EffectHolder> chain)
+    {
+        List<ActionToken> a = page.actions;
+
+        for (int i = 0; i < a.Count; i++)
+        {
+            a[i].player = gameEntity;
+            a[i].holder = holder;
+            a[i].chain = new(chain);
+        }
+        AddPagesAction aA = new(this, page, page_index);
+        await holder.SpecificFullDelayProc("addaction", chain, aA, 1, holder);
+        playable = false;
+    }    
 
     #endregion
 
@@ -314,7 +329,7 @@ public class LevelManager : MonoBehaviour
         return (cell.x - minBound.x, cell.y - minBound.y);
     }
 
-    public bool IsInStraightLine(Vector3Int center, Vector3Int cell)
+    public  bool IsInStraightLine(Vector3Int center, Vector3Int cell)
     {
         Vector3Int a = OffsetToCube(center);
         Vector3Int b = OffsetToCube(cell);
@@ -336,8 +351,8 @@ public class LevelManager : MonoBehaviour
             Mathf.Abs(d.y) == Mathf.Abs(d.z) && d.x == 0;
     }
 
-    
-    
+
+
     public Vector3Int MouseToCell()
     {
         Vector2 pointValue = pointAction.ReadValue<Vector2>();
@@ -345,7 +360,7 @@ public class LevelManager : MonoBehaviour
         return gridComponent.WorldToCell(mouseWorld);
     }
 
-    public int CellDistance(Vector3Int firstcell, Vector3Int secondcell)
+    public  int CellDistance(Vector3Int firstcell, Vector3Int secondcell)
     {
         Vector3Int a = OffsetToCube(firstcell);
         Vector3Int b = OffsetToCube(secondcell);
@@ -413,7 +428,7 @@ public class LevelManager : MonoBehaviour
         return (smallest_cost, connections, exclude);
     }
 
-    public List<Vector3Int> MapCreate(Dictionary<Vector3Int, int> Dic, List<Vector3Int> exclude)
+    public  List<Vector3Int> MapCreate(Dictionary<Vector3Int, int> Dic, List<Vector3Int> exclude)
     {
         List<Vector3Int> result = new();
 
@@ -426,7 +441,7 @@ public class LevelManager : MonoBehaviour
         return result;
     }
 
-    public List<Vector3Int> ConnectPath(Vector3Int vec, Dictionary<Vector3Int, Vector3Int> connections)
+    public  List<Vector3Int> ConnectPath(Vector3Int vec, Dictionary<Vector3Int, Vector3Int> connections)
     {
         List<Vector3Int> result = new() { vec };
         while (connections.TryGetValue(vec, out Vector3Int new_val))
@@ -440,7 +455,7 @@ public class LevelManager : MonoBehaviour
 
 
 
-    public List<Vector3Int> CellRange(Vector3Int center, int N)
+    public  List<Vector3Int> CellRange(Vector3Int center, int N)
     {
         List<Vector3Int> results = new();
 
@@ -456,7 +471,7 @@ public class LevelManager : MonoBehaviour
         return results;
     }
 
-    public void CellRange(ref List<Vector3Int> results, Vector3Int center, int N)
+    public  void CellRange(ref List<Vector3Int> results, Vector3Int center, int N)
     {
 
         Vector3Int center_cube = OffsetToCube(center);
@@ -553,7 +568,9 @@ public class LevelManager : MonoBehaviour
 
     }
 
-    public List<Vector3Int> CellRing(Vector3Int center, int radius)
+     
+
+    public  List<Vector3Int> CellRing(Vector3Int center, int radius)
     {
         Vector3Int cube_center = OffsetToCube(center);
         List<Vector3Int> results = new();
@@ -572,7 +589,7 @@ public class LevelManager : MonoBehaviour
         return results;
     }
 
-    public void CellRing(ref List<Vector3Int> results, Vector3Int center, int radius)
+    public  void CellRing(ref List<Vector3Int> results, Vector3Int center, int radius)
     {
         Vector3Int cube_center = OffsetToCube(center);
 
@@ -678,7 +695,7 @@ public class LevelManager : MonoBehaviour
 
 
 
-    private Vector3Int OffsetToCube(Vector3Int vec)
+    private  Vector3Int OffsetToCube(Vector3Int vec)
     {
         int col = vec.x;
         int row = vec.y;
@@ -689,7 +706,7 @@ public class LevelManager : MonoBehaviour
         return new Vector3Int(x, z, y);
     }
 
-    private Vector3Int CubeToOffset(Vector3Int vec)
+    private  Vector3Int CubeToOffset(Vector3Int vec)
     {
         var parity = vec.y & 1;
         var col = vec.x + (vec.y - parity) / 2;
@@ -698,7 +715,7 @@ public class LevelManager : MonoBehaviour
     }
 
 
-    private Vector3 LerpVector3(Vector3 a, Vector3 b, float t)
+    private  Vector3 LerpVector3(Vector3 a, Vector3 b, float t)
     {
         return new Vector3(Mathf.Lerp(a.x, b.x, t),
             Mathf.Lerp(a.y, b.y, t),
@@ -707,28 +724,26 @@ public class LevelManager : MonoBehaviour
 
 
 
-    public Vector3Int VectorScale(Vector3Int hex, int factor)
+    public  Vector3Int VectorScale(Vector3Int hex, int factor)
     {
         return new Vector3Int(hex.x * factor, hex.y * factor, hex.z * factor);
     }
 
-    int[,] matrix = { { 1, 2, 3 }, { 4, 5, 6 } };
+    private  Vector3Int[] cube_direction_vectors = { new Vector3Int(+1, 0, -1), new Vector3Int(+1, -1, 0), new Vector3Int(0, -1, +1), new Vector3Int(-1, 0, +1), new Vector3Int(-1, +1, 0), new Vector3Int(0, +1, -1) };
+    private  Vector3Int[,] offset_direction_vectors = { { new Vector3Int(1, 0), new Vector3Int(0, -1), new Vector3Int(-1, -1), new Vector3Int(-1, 0), new Vector3Int(-1, 1), new Vector3Int(0, +1) }, { new Vector3Int(1, 0, 0), new Vector3Int(1, -1, 0), new Vector3Int(0, -1, 0), new Vector3Int(-1, 0, 0), new Vector3Int(0, 1, 0), new Vector3Int(1, 1, 0) } };
 
-    private Vector3Int[] cube_direction_vectors = { new Vector3Int(+1, 0, -1), new Vector3Int(+1, -1, 0), new Vector3Int(0, -1, +1), new Vector3Int(-1, 0, +1), new Vector3Int(-1, +1, 0), new Vector3Int(0, +1, -1) };
-    private Vector3Int[,] offset_direction_vectors = { { new Vector3Int(1, 0), new Vector3Int(0, -1), new Vector3Int(-1, -1), new Vector3Int(-1, 0), new Vector3Int(-1, 1), new Vector3Int(0, +1) }, { new Vector3Int(1, 0, 0), new Vector3Int(1, -1, 0), new Vector3Int(0, -1, 0), new Vector3Int(-1, 0, 0), new Vector3Int(0, 1, 0), new Vector3Int(1, 1, 0) } };
-
-    public Vector3Int VectorAdd(Vector3Int hex, Vector3Int vec)
+    public  Vector3Int VectorAdd(Vector3Int hex, Vector3Int vec)
     {
         return new Vector3Int(hex.x + vec.x, hex.y + vec.y, hex.z + vec.z);
     }
-    public Vector3Int CubeNeighbor(Vector3Int cube, int direction)
+    public  Vector3Int CubeNeighbor(Vector3Int cube, int direction)
     {
         return VectorAdd(cube, CubeDirection(direction));
     }
-    public Vector3Int CubeDirection(int direction)
+    public  Vector3Int CubeDirection(int direction)
     { return cube_direction_vectors[direction]; }
 
-    public Vector3Int OffsetNeighbor(Vector3Int hex, int direction)
+    public  Vector3Int OffsetNeighbor(Vector3Int hex, int direction)
     {
         int parity = hex.y & 1;
         Vector3Int diff = offset_direction_vectors[parity, direction];
@@ -738,19 +753,3 @@ public class LevelManager : MonoBehaviour
     #endregion
 }
 
-public class CellBase
-{
-    public int x, y, hcost, fcost, gcost;
-
-    public CellBase(Vector3Int coord)
-    {
-        x = coord.x;
-        y = coord.y;
-    }
-
-    public CellBase(int x, int y)
-    {
-        this.x = x;
-        this.y = y;
-    }
-}

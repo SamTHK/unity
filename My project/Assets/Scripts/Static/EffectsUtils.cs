@@ -3,7 +3,13 @@ using System.Linq;
 
 public static class EffectsUtils
 {
-    public static List<object> ObjectList(object[] objects, params object[] param)
+    public static Dictionary<Proc, string> procname;
+
+    public enum Proc
+    {
+
+    }
+    public static object[] ObjectLists(object[] objects, params object[] param)
     {
         List<object> list;
         if (objects == null)
@@ -19,7 +25,26 @@ public static class EffectsUtils
         {
             list.Insert(i, param[i]);
         }
-        return list;
+        return list.ToArray();
+
+    }
+
+    public static object[] ObjectList(object[] objects, int place, object param)
+    {
+        List<object> list;
+        if (objects == null)
+        {
+            list = new();
+        }
+        else
+        {
+            list = objects.ToList();
+        }
+
+        
+        list.Insert(place, param);
+        
+        return list.ToArray();
 
     }
 

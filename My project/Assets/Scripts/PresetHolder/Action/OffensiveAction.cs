@@ -8,7 +8,7 @@ public class OffensiveAction : OnTurnAction
     public int minRoll, maxRoll;
 
 
-    public OffensiveAction() : base()
+    public OffensiveAction(GameEntity player, EffectHolder holder) : base(player, holder)
     {
         actiontype = ActionType.Offensive;
     }

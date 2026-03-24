@@ -9,7 +9,7 @@ using static UnityEngine.Rendering.GPUSort;
 
 public class Condition 
 {
-    public virtual async Task<bool> Proc(string proc, string[] variables, List<EffectPair> chain, EffectPair owner, List<object> args)
+    public virtual async Task<bool> Proc(string proc, string[] variables, List<EffectHolder> chain, EffectHolder owner, object[] args)
     {
         if (chain.Contains(owner))
         {
@@ -20,7 +20,7 @@ public class Condition
 }
 public class Effect 
 {
-    public async virtual Task Proc(string proc, string[] variables, List<EffectPair> chain, EffectPair owner, List<object> args)
+    public async virtual Task Proc(string proc, string[] variables, List<EffectHolder> chain, EffectHolder owner, object[] args)
     {
 
     }
@@ -75,27 +75,29 @@ public class EffectPair
     }
 
 
-    public async Task Proc(string proc, List<EffectPair> chain, List<object> args)
+    public async Task Proc(string proc, List<EffectHolder> chain, object[] args)
     {
        
             string proc_optimized = EffectsUtils.StandardString(proc);
-            if (await condition.Proc(proc_optimized, cVariables, chain, this, args))
+            if (await condition.Proc(proc_optimized, cVariables, chain, holder, args))
             {
-                List<EffectPair> new_chain;
+                List<EffectHolder> new_chain;
                 if (chain != null)
                 {
-                    new_chain = new List<EffectPair>(chain);
+                    new_chain = new List<EffectHolder>(chain);
                 }
                 else
                 {
-                    new_chain = new List<EffectPair>();
+                    new_chain = new List<EffectHolder>();
                 }
-                await effect.Proc(proc_optimized, eVariables, new_chain, this, args);
+                await effect.Proc(proc_optimized, eVariables, new_chain, holder, args);
             }
         
     }
 
-    
+
+
+
 }
 
 
