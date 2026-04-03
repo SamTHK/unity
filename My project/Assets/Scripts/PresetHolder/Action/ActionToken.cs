@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
 public abstract class ActionToken : EffectHolder
@@ -28,65 +26,32 @@ public abstract class ActionToken : EffectHolder
         type = EffectHolderType.Action;
     }
 
-    protected async virtual Task Activate(LevelManager man)
+    public virtual async Task Activate(LevelManager man)
     {
-
+        return;
     }
 
-    public async Task TryActivate(LevelManager man)
+    public ActionToken ShallowClone()
     {
-
+        return (ActionToken)MemberwiseClone();
     }
 
-    public override async Task SpecificFullProc(string proc, List<EffectHolder> chain, params object[] arg)
+    public override async Task SpecificFullProc(string proc, List<EffectHolder> chain, bool global = true, params object[] arg)
     {
-        await FullProc(proc, chain, arg);
-        if (holder is Card)
-        {
-           await ((Card)holder).Proc(proc, chain, arg);
-        }    
-        await player.Proc(proc, chain, arg);
-    }
-
-    public override async Task SpecificFullDelayProc(string proc, List<EffectHolder> chain, DelayAction action, int action_position = 0, params object[] arg)
-    {
-		if (arg == null) { arg = new object[1] { action }; } else { arg = EffectsUtils.ObjectList(arg, action_position, action); }
-
-		await GlobalProc(proc, chain, arg);
+        if (global)
+        { await GlobalProc(proc, chain, arg); }
         await Proc(proc, chain, arg);
-        if (holder is Card)
+
+        if (holder is Card card)
         {
-            await ((Card)holder).Proc(proc, chain, arg);
+            await card.Proc(proc, chain, arg);
         }
         await player.Proc(proc, chain, arg);
-        await action.Run();
     }
 
-	public override async Task SpecificFullProc(EffectsUtils.Proc procname, List<EffectHolder> chain, params object[] arg)
-	{
-		string proc = EffectsUtils.procname[procname];
-		await FullProc(proc, chain, arg);
-		if (holder is Card)
-		{
-			await ((Card)holder).Proc(proc, chain, arg);
-		}
-		await player.Proc(proc, chain, arg);
-	}
+    
 
-	public override async Task SpecificFullDelayProc(EffectsUtils.Proc procname, List<EffectHolder> chain, DelayAction action, int action_position, params object[] arg)
-	{
-		string proc = EffectsUtils.procname[procname];
-		if (arg == null) { arg = new object[1] { action }; } else { arg = EffectsUtils.ObjectList(arg, action_position, action); }
 
-		await GlobalProc(proc, chain, arg);
-		await Proc(proc, chain, arg);
-		if (holder is Card)
-		{
-			await ((Card)holder).Proc(proc, chain, arg);
-		}
-		await player.Proc(proc, chain, arg);
-		await action.Run();
-	}
 }
 
 public class OnTurnAction : ActionToken
@@ -95,12 +60,13 @@ public class OnTurnAction : ActionToken
     public bool forceRechoose;
     public OnTurnAction(GameEntity player, EffectHolder holder) : base(player, holder)
     {
-        
+
     }
 }
 
 public class DefensiveAction : ActionToken
 {
+    public int lifetime, roundstartexisting;
     public DefensiveAction(GameEntity player, EffectHolder holder) : base(player, holder)
     {
         actiontype = ActionType.Defensive;

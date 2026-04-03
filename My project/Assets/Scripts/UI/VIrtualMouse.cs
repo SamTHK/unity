@@ -19,10 +19,10 @@ public class VirMouse : MonoBehaviour
         mouseTransform.position = new Vector2(Screen.width / 2, Screen.height / 2) * rectTransform.localScale.x;
         mouseTransform.localScale = rectTransform.localScale;
         InputState.Change(virtualMouseInput.virtualMouse.position, new Vector2(Screen.width / 2, Screen.height / 2));
-    }    
+    }
     private void OnEnable()
     {
-   
+
         mouseTransform.position = new Vector2(Screen.width / 2, Screen.height / 2) * rectTransform.localScale.x;
         mouseTransform.localScale = rectTransform.localScale;
         if (virtualMouseInput.virtualMouse != null)

@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Unity.VisualScripting;
 
 public class DelayAction
 {
-    public string name;
+    public string procname;
     public List<Pair<Func<DelayAction, Task>, int>> function_list = new();
     public bool ran;
 
@@ -22,7 +20,7 @@ public class DelayAction
         {
             function_list.Add(new Pair<Func<DelayAction, Task>, int>(func, priority));
         }
-        else 
+        else
         {
             for (int i = 0; i < function_list.Count; i++)
             {
@@ -31,31 +29,31 @@ public class DelayAction
                     function_list.Insert(i, new Pair<Func<DelayAction, Task>, int>(func, priority));
                 }
             }
-        }    
+        }
     }
 
     public async Task Run()
     {
         bool ran = false;
-        foreach(Pair < Func<DelayAction, Task>, int> fu in function_list)
+        foreach (Pair<Func<DelayAction, Task>, int> fu in function_list)
         {
             if (fu.value < 0 || ran)
             {
                 await fu.key(this);
             }
-            else 
+            else
             {
-                if (!(await DefaultRun()))
+                if (!await DefaultRun())
                 {
                     this.ran = false;
                     return;
-                } 
+                }
                 this.ran = true;
                 ran = true;
-            }    
-        }    
+            }
+        }
     }
-    
+
 }
 
 public class Pair<T, N>
@@ -68,4 +66,4 @@ public class Pair<T, N>
         this.key = key;
         this.value = value;
     }
-}    
+}

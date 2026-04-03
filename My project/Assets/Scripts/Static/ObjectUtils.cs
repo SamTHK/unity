@@ -1,7 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 public class ObjectUtils
 {
@@ -29,7 +26,7 @@ public class ObjectUtils
         {
             if (assetManager == null)
             {
-                
+
                 AssetManager o = Object.FindAnyObjectByType<AssetManager>();
                 if (o != null)
                 {
@@ -83,5 +80,5 @@ public class ObjectUtils
         }
     }
 
-    
+
 }

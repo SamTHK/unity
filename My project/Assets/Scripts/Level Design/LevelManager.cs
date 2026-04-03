@@ -49,8 +49,8 @@ public class LevelManager : MonoBehaviour
     #region init
     [SerializeField] public GameObject Opuddle, Ochoose, Orange;
     [SerializeField] TileBase tileBase;
-    public  Dictionary<string, int> default_walk = new();
-    public  Dictionary<string, int> default_bullet = new();
+    public Dictionary<string, int> default_walk = new();
+    public Dictionary<string, int> default_bullet = new();
     public Tilemap wallMap { get; protected set; }
     public Tilemap voidMap { get; protected set; }
     public Tilemap puddleMap { get; protected set; }
@@ -81,7 +81,7 @@ public class LevelManager : MonoBehaviour
     public LevelPreset preset;
 
     bool init;
-    Dictionary<string, List<EffectHolder>> Trigger;
+    readonly Dictionary<string, List<EffectHolder>> Trigger;
     public EffectHolder effect = new();
 
     public async void Init(LevelPreset preset = null)
@@ -178,18 +178,75 @@ public class LevelManager : MonoBehaviour
     public Creature turn_of;
     public List<Pair<Creature, int>> creature_list;
 
-    public bool returnable, playable, running;
+    public bool playable = true, running = false;
     public Card cardPlaying;
     public ActionToken actionDoing;
     public ChooseToken chooseDoing;
-    public Page currentPage;
+    public OnTurnPage currentPage;
     public List<Page> pages;
     public List<Page> previousPage;
 
     private async void CheckActions()
     {
+        if (!running)
+        {
+            if (pages.Count > 0)
+            {
+                running = true;
+                playable = false;
 
-    }    
+                Page first = pages[0];
+                if (first.CheckLeft())
+                {
+                    if (!first.OnTurnCheck())
+                    {
+                        DefensivePage newpage = (DefensivePage)first;
+
+                        DefensiveAction a = newpage.actions[0];
+                        newpage.actions.RemoveAt(0);
+
+                        DefenseReservedAction DRa = new(this, a);
+                        await a.SpecificFullDelayProc(null, DRa);
+
+                    }
+                    else
+                    {
+                        OnTurnPage newpage = (OnTurnPage)first;
+
+                        OnTurnAction a = newpage.actions[0];
+                        ChooseToken b = newpage.choose;
+                        newpage.actions.RemoveAt(0);
+
+                        if (b.result == null || a.forceRechoose)
+                        {
+                            await b.TryVisualize(this);
+                        }
+
+                        await a.Activate(this);
+                    }
+                }
+                else
+                {
+                    previousPage.Add(first);
+                    pages.RemoveAt(0);
+                }
+
+                running = false;
+            }
+            else
+            {
+                playable = true;
+                running = false;
+                previousPage.Clear();
+
+                if (cardPlaying != null)
+                {
+                    cardPlaying.SpecificFullProc("cardend", null, true, cardPlaying);
+                    cardPlaying = null;
+                }
+            }
+        }
+    }
 
     /*private async void CheckActions()
     {
@@ -253,20 +310,18 @@ public class LevelManager : MonoBehaviour
     public async void ParseActions(Card card, List<EffectHolder> chain)
     {
         cardPlaying = card;
-        pages.Clear();
 
-        CardPlayAction parseAction = new(this, card.pages, chain);
 
-        await card.SpecificFullDelayProc("cardstart", chain, parseAction, 1, card);
+        CardPlayAction parseAction = new(this, card, chain);
 
-        actionDoing = null;
-        chooseDoing = null;
+        await card.SpecificFullDelayProc(chain, parseAction, 1, card);
+
+
 
 
         playable = false;
-        returnable = true;
     }
-    
+
 
     public async Task AddAction(GameEntity gameEntity, EffectHolder holder, int action_index, OnTurnAction action, bool forcerechoose, List<EffectHolder> chain)
     {
@@ -275,19 +330,19 @@ public class LevelManager : MonoBehaviour
         await AddAction(gameEntity, holder, action_index, action, chain);
     }
 
-    public async Task AddAction(GameEntity gameEntity, EffectHolder holder, int action_index, ActionToken action, List<EffectHolder> chain)
+    public async Task AddAction(GameEntity gameEntity, EffectHolder holder, int action_index, OnTurnAction action, List<EffectHolder> chain)
     {
         action.player = gameEntity;
         action.holder = holder;
         action.chain = new(chain);
         AddActionAction aA = new(this, action, action_index);
-        await holder.SpecificFullDelayProc("addaction", chain, aA, 1, holder);
+        await holder.SpecificFullDelayProc(chain, aA, 1, holder);
         playable = false;
     }
-    
-    public async Task AddPage(GameEntity gameEntity, EffectHolder holder, int page_index, Page page, List<EffectHolder> chain)
+
+    public async Task AddPage(GameEntity gameEntity, EffectHolder holder, int page_index, OnTurnPage page, List<EffectHolder> chain)
     {
-        List<ActionToken> a = page.actions;
+        List<OnTurnAction> a = page.actions;
 
         for (int i = 0; i < a.Count; i++)
         {
@@ -295,10 +350,25 @@ public class LevelManager : MonoBehaviour
             a[i].holder = holder;
             a[i].chain = new(chain);
         }
-        AddPagesAction aA = new(this, page, page_index);
-        await holder.SpecificFullDelayProc("addaction", chain, aA, 1, holder);
+        AddPageAction aA = new(this, page, page_index);
+        await holder.SpecificFullDelayProc(chain, aA, 1, holder);
         playable = false;
-    }    
+    }
+
+    public async Task AddPage(GameEntity gameEntity, EffectHolder holder, int page_index, DefensivePage page, List<EffectHolder> chain)
+    {
+        List<DefensiveAction> a = page.actions;
+
+        for (int i = 0; i < a.Count; i++)
+        {
+            a[i].player = gameEntity;
+            a[i].holder = holder;
+            a[i].chain = new(chain);
+        }
+        AddPageAction aA = new(this, page, page_index);
+        await holder.SpecificFullDelayProc(chain, aA, 1, holder);
+        playable = false;
+    }
 
     #endregion
 
@@ -329,7 +399,7 @@ public class LevelManager : MonoBehaviour
         return (cell.x - minBound.x, cell.y - minBound.y);
     }
 
-    public  bool IsInStraightLine(Vector3Int center, Vector3Int cell)
+    public bool IsInStraightLine(Vector3Int center, Vector3Int cell)
     {
         Vector3Int a = OffsetToCube(center);
         Vector3Int b = OffsetToCube(cell);
@@ -346,9 +416,9 @@ public class LevelManager : MonoBehaviour
             (d.x == d.z * -1 && d.y == 0) ||
             (d.y == d.z * -1 && d.x == 0) ||
             // For longer lines — better to normalize:
-            Mathf.Abs(d.x) == Mathf.Abs(d.y) && d.z == 0 ||
-            Mathf.Abs(d.x) == Mathf.Abs(d.z) && d.y == 0 ||
-            Mathf.Abs(d.y) == Mathf.Abs(d.z) && d.x == 0;
+            (Mathf.Abs(d.x) == Mathf.Abs(d.y) && d.z == 0) ||
+            (Mathf.Abs(d.x) == Mathf.Abs(d.z) && d.y == 0) ||
+            (Mathf.Abs(d.y) == Mathf.Abs(d.z) && d.x == 0);
     }
 
 
@@ -360,7 +430,7 @@ public class LevelManager : MonoBehaviour
         return gridComponent.WorldToCell(mouseWorld);
     }
 
-    public  int CellDistance(Vector3Int firstcell, Vector3Int secondcell)
+    public int CellDistance(Vector3Int firstcell, Vector3Int secondcell)
     {
         Vector3Int a = OffsetToCube(firstcell);
         Vector3Int b = OffsetToCube(secondcell);
@@ -382,8 +452,10 @@ public class LevelManager : MonoBehaviour
             cell[o] = new();
         }
         Dictionary<Vector3Int, Vector3Int> connections = new();
-        Dictionary<Vector3Int, int> smallest_cost = new Dictionary<Vector3Int, int>();
-        smallest_cost[center] = 0;
+        Dictionary<Vector3Int, int> smallest_cost = new()
+        {
+            [center] = 0
+        };
         cell[0].Add(center);
 
         for (int i = 0; i < N; i++)
@@ -428,7 +500,7 @@ public class LevelManager : MonoBehaviour
         return (smallest_cost, connections, exclude);
     }
 
-    public  List<Vector3Int> MapCreate(Dictionary<Vector3Int, int> Dic, List<Vector3Int> exclude)
+    public List<Vector3Int> MapCreate(Dictionary<Vector3Int, int> Dic, List<Vector3Int> exclude)
     {
         List<Vector3Int> result = new();
 
@@ -441,7 +513,7 @@ public class LevelManager : MonoBehaviour
         return result;
     }
 
-    public  List<Vector3Int> ConnectPath(Vector3Int vec, Dictionary<Vector3Int, Vector3Int> connections)
+    public List<Vector3Int> ConnectPath(Vector3Int vec, Dictionary<Vector3Int, Vector3Int> connections)
     {
         List<Vector3Int> result = new() { vec };
         while (connections.TryGetValue(vec, out Vector3Int new_val))
@@ -455,7 +527,7 @@ public class LevelManager : MonoBehaviour
 
 
 
-    public  List<Vector3Int> CellRange(Vector3Int center, int N)
+    public List<Vector3Int> CellRange(Vector3Int center, int N)
     {
         List<Vector3Int> results = new();
 
@@ -465,13 +537,13 @@ public class LevelManager : MonoBehaviour
             for (int r = Mathf.Max(-N, -q - N); r <= Mathf.Min(+N, -q + N); r++)
             {
                 var s = -q - r;
-                results.Add(CubeToOffset((VectorAdd(center_cube, new Vector3Int(q, r, s)))));
+                results.Add(CubeToOffset(VectorAdd(center_cube, new Vector3Int(q, r, s))));
             }
         }
         return results;
     }
 
-    public  void CellRange(ref List<Vector3Int> results, Vector3Int center, int N)
+    public void CellRange(ref List<Vector3Int> results, Vector3Int center, int N)
     {
 
         Vector3Int center_cube = OffsetToCube(center);
@@ -480,7 +552,7 @@ public class LevelManager : MonoBehaviour
             for (int r = Mathf.Max(-N, -q - N); r <= Mathf.Min(+N, -q + N); r++)
             {
                 var s = -q - r;
-                results.Add(CubeToOffset((VectorAdd(center_cube, new Vector3Int(q, r, s)))));
+                results.Add(CubeToOffset(VectorAdd(center_cube, new Vector3Int(q, r, s))));
             }
         }
 
@@ -510,8 +582,8 @@ public class LevelManager : MonoBehaviour
     {
         float distance = CellDistance(firstcell, secondcell);
 
-        List<Vector3Int> list = new List<Vector3Int>();
-        List<Vector3Int> exclude = new List<Vector3Int>();
+        List<Vector3Int> list = new();
+        List<Vector3Int> exclude = new();
 
         Vector3 firstpos = gridComponent.CellToWorld(firstcell);
         Vector3 secondpos = gridComponent.CellToWorld(secondcell);
@@ -539,7 +611,7 @@ public class LevelManager : MonoBehaviour
         return (list, exclude);
     }
 
-    public void CellLine(ref List<Vector3Int> list, ref List<Vector3Int> exclude, Vector3Int firstcell, Vector3Int secondcell, int overflow = 0, int piercing = 0, Dictionary<string, int> piercing_numbers = null, bool remove_entity = true)
+    public void CellLine(ref List<Vector3Int> list, ref List<Vector3Int> exclude, Vector3Int firstcell, Vector3Int secondcell, int overflow = 0, int piercing = 0, Dictionary<string, int> piercing_numbers = null)
     {
         float distance = CellDistance(firstcell, secondcell);
 
@@ -568,9 +640,9 @@ public class LevelManager : MonoBehaviour
 
     }
 
-     
 
-    public  List<Vector3Int> CellRing(Vector3Int center, int radius)
+
+    public List<Vector3Int> CellRing(Vector3Int center, int radius)
     {
         Vector3Int cube_center = OffsetToCube(center);
         List<Vector3Int> results = new();
@@ -589,7 +661,7 @@ public class LevelManager : MonoBehaviour
         return results;
     }
 
-    public  void CellRing(ref List<Vector3Int> results, Vector3Int center, int radius)
+    public void CellRing(ref List<Vector3Int> results, Vector3Int center, int radius)
     {
         Vector3Int cube_center = OffsetToCube(center);
 
@@ -608,18 +680,14 @@ public class LevelManager : MonoBehaviour
 
     public bool HasTile(Vector3Int cell, TileType type)
     {
-        switch (type)
+        return type switch
         {
-            case TileType.floor_:
-                return floorMap.HasTile(cell);
-            case TileType.wall_:
-                return wallMap.HasTile(cell);
-            case TileType.void_:
-                return voidMap.HasTile(cell);
-            case TileType.barrier_:
-                return barrierMap.HasTile(cell);
-        }
-        return false;
+            TileType.floor_ => floorMap.HasTile(cell),
+            TileType.wall_ => wallMap.HasTile(cell),
+            TileType.void_ => voidMap.HasTile(cell),
+            TileType.barrier_ => barrierMap.HasTile(cell),
+            _ => false,
+        };
     }
 
     public Puddle CheckPuddle(Vector3Int cell)
@@ -640,8 +708,7 @@ public class LevelManager : MonoBehaviour
         if (piercing_numbers != null)
         {
 
-            int delete = 0;
-            if (piercing_numbers.TryGetValue("floor", out delete) && HasTile(cell, TileType.floor_))
+            if (piercing_numbers.TryGetValue("floor", out int delete) && HasTile(cell, TileType.floor_))
             {
                 cost += delete;
             }
@@ -649,7 +716,7 @@ public class LevelManager : MonoBehaviour
             {
                 cost += delete;
             }
-            if (piercing_numbers.TryGetValue("void", out delete) && HasTile(cell, TileType.void_))
+            if (piercing_numbers.TryGetValue("void", out _) && HasTile(cell, TileType.void_))
             {
                 cost = 9999;
             }
@@ -695,27 +762,27 @@ public class LevelManager : MonoBehaviour
 
 
 
-    private  Vector3Int OffsetToCube(Vector3Int vec)
+    private Vector3Int OffsetToCube(Vector3Int vec)
     {
         int col = vec.x;
         int row = vec.y;
         int parity = row & 1;
-        int x = col - (row - parity) / 2;
+        int x = col - ((row - parity) / 2);
         int z = row;
         int y = -x - z;
         return new Vector3Int(x, z, y);
     }
 
-    private  Vector3Int CubeToOffset(Vector3Int vec)
+    private Vector3Int CubeToOffset(Vector3Int vec)
     {
         var parity = vec.y & 1;
-        var col = vec.x + (vec.y - parity) / 2;
+        var col = vec.x + ((vec.y - parity) / 2);
         var row = vec.y;
         return new Vector3Int(col, row);
     }
 
 
-    private  Vector3 LerpVector3(Vector3 a, Vector3 b, float t)
+    private Vector3 LerpVector3(Vector3 a, Vector3 b, float t)
     {
         return new Vector3(Mathf.Lerp(a.x, b.x, t),
             Mathf.Lerp(a.y, b.y, t),
@@ -724,26 +791,26 @@ public class LevelManager : MonoBehaviour
 
 
 
-    public  Vector3Int VectorScale(Vector3Int hex, int factor)
+    public Vector3Int VectorScale(Vector3Int hex, int factor)
     {
         return new Vector3Int(hex.x * factor, hex.y * factor, hex.z * factor);
     }
 
-    private  Vector3Int[] cube_direction_vectors = { new Vector3Int(+1, 0, -1), new Vector3Int(+1, -1, 0), new Vector3Int(0, -1, +1), new Vector3Int(-1, 0, +1), new Vector3Int(-1, +1, 0), new Vector3Int(0, +1, -1) };
-    private  Vector3Int[,] offset_direction_vectors = { { new Vector3Int(1, 0), new Vector3Int(0, -1), new Vector3Int(-1, -1), new Vector3Int(-1, 0), new Vector3Int(-1, 1), new Vector3Int(0, +1) }, { new Vector3Int(1, 0, 0), new Vector3Int(1, -1, 0), new Vector3Int(0, -1, 0), new Vector3Int(-1, 0, 0), new Vector3Int(0, 1, 0), new Vector3Int(1, 1, 0) } };
+    private readonly Vector3Int[] cube_direction_vectors = { new(+1, 0, -1), new(+1, -1, 0), new(0, -1, +1), new(-1, 0, +1), new(-1, +1, 0), new(0, +1, -1) };
+    private readonly Vector3Int[,] offset_direction_vectors = { { new Vector3Int(1, 0), new Vector3Int(0, -1), new Vector3Int(-1, -1), new Vector3Int(-1, 0), new Vector3Int(-1, 1), new Vector3Int(0, +1) }, { new Vector3Int(1, 0, 0), new Vector3Int(1, -1, 0), new Vector3Int(0, -1, 0), new Vector3Int(-1, 0, 0), new Vector3Int(0, 1, 0), new Vector3Int(1, 1, 0) } };
 
-    public  Vector3Int VectorAdd(Vector3Int hex, Vector3Int vec)
+    public Vector3Int VectorAdd(Vector3Int hex, Vector3Int vec)
     {
         return new Vector3Int(hex.x + vec.x, hex.y + vec.y, hex.z + vec.z);
     }
-    public  Vector3Int CubeNeighbor(Vector3Int cube, int direction)
+    public Vector3Int CubeNeighbor(Vector3Int cube, int direction)
     {
         return VectorAdd(cube, CubeDirection(direction));
     }
-    public  Vector3Int CubeDirection(int direction)
+    public Vector3Int CubeDirection(int direction)
     { return cube_direction_vectors[direction]; }
 
-    public  Vector3Int OffsetNeighbor(Vector3Int hex, int direction)
+    public Vector3Int OffsetNeighbor(Vector3Int hex, int direction)
     {
         int parity = hex.y & 1;
         Vector3Int diff = offset_direction_vectors[parity, direction];

@@ -1,11 +1,17 @@
 using UnityEngine;
 
-public class StaticGameObject : GameEntity
+public class Construct : GameEntity
 {
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     
-    public StaticGameObject()
+    public Construct()
     {
         
     }
+
+    public override bool CheckStatic()
+    {
+        return true;
+    }
 }
+

@@ -10,12 +10,14 @@ public class GameEntity : MonoBehaviour
     public List<string> tags = new();
     public string Oname;
     public Vector3Int position;
+    public List<DefensiveAction> defenses = new();
     public int health {  get; protected set; }
+    
 
 
-    public async Task Proc(string proc, List<EffectHolder> chain, object[] arg)
+    public virtual bool CheckStatic()
     {
-
+        return false;
     }    
 
     protected virtual void Start()
@@ -27,6 +29,11 @@ public class GameEntity : MonoBehaviour
     protected virtual void Update()
     {
 
-    }    
+    }
 
+    public async Task Proc(string proc, List<EffectHolder> chain, object[] arg)
+    {
+
+    }
 }
+

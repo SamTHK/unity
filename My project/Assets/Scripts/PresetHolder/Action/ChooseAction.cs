@@ -1,13 +1,10 @@
-﻿using System;
-using System.Threading.Tasks;
-using UnityEngine;
+﻿using System.Threading.Tasks;
 
-public class ChooseToken : ICloneable
+public class ChooseToken
 {
     public string Name { get; protected set; }
     public int size, range, targets;
     public ChooseResult result;
-    public Vector3Int center;
     public EffectHolder holder;
     public GameEntity player;
 
@@ -19,6 +16,11 @@ public class ChooseToken : ICloneable
         positive,
         negative,
         other
+    }
+
+    public ChooseToken ShallowClone()
+    {
+        return (ChooseToken)MemberwiseClone();
     }
 
     protected async virtual Task<ChooseResult> AlgoVisualize(LevelManager man)
@@ -33,13 +35,9 @@ public class ChooseToken : ICloneable
 
     public async Task<ChooseResult> TryVisualize(LevelManager man)
     {
-        return null; 
+        return null;
     }
 
-    public virtual object Clone()
-    {
-        return new ChooseToken() { };
-    }
 }
 
 public class ChooseResult

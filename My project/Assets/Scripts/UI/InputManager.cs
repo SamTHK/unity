@@ -1,14 +1,7 @@
-using CodeMonkey.Utils;
-using System.Security.Cryptography;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Controls;
-using UnityEngine.InputSystem.LowLevel;
-using UnityEngine.InputSystem.UI;
-using UnityEngine.UIElements;
 
-
-
+[RequireComponent(typeof(PlayerInput))]
 public class InputManager : MonoBehaviour
 {
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -39,7 +32,7 @@ public class InputManager : MonoBehaviour
                 mouse.gameObject.SetActive(false);
                 UnityEngine.Cursor.visible = true;
                 Mouse.current.WarpCursorPosition(new Vector2(Screen.width / 2, Screen.height / 2));
-                
+
             }
             else
             {
@@ -51,6 +44,6 @@ public class InputManager : MonoBehaviour
         }
     }
 
-   
+
 
 }

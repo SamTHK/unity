@@ -1,6 +1,3 @@
-
-
-using NUnit.Framework;
 using System.Collections.Generic;
 
 public class LevelPreset
@@ -13,10 +10,10 @@ public class LevelPreset
     {
 
     }
-    
+
     public virtual void Update(LevelManager lm)
     {
 
     }
-    
+
 }

@@ -1,28 +1,25 @@
-using Febucci.UI.Examples;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
-using static UnityEngine.Rendering.GPUSort;
 
 
-public class Condition 
+public class Condition
 {
     public virtual async Task<bool> Proc(string proc, string[] variables, List<EffectHolder> chain, EffectHolder owner, object[] args)
     {
         if (chain.Contains(owner))
         {
             return false;
-        }    
+        }
+
         return true;
     }
 }
-public class Effect 
+public class Effect
 {
     public async virtual Task Proc(string proc, string[] variables, List<EffectHolder> chain, EffectHolder owner, object[] args)
     {
-
+        chain.Add(owner);
     }
 }
 
@@ -40,7 +37,7 @@ public class EffectPair
     public string[] cVariables;
     public string[] eVariables;
 
-    public EffectPair(EffectHolder holder, EffectPreset effect, ConditionPreset condition, bool defaultEffect = false )
+    public EffectPair(EffectHolder holder, EffectPreset effect, ConditionPreset condition, bool defaultEffect = false)
     {
         this.defaultEffect = defaultEffect;
         this.holder = holder;
@@ -62,7 +59,7 @@ public class EffectPair
         if (condition.basecondition == "")
         {
             this.effect = null;
-            
+
         }
         else
         {
@@ -77,22 +74,23 @@ public class EffectPair
 
     public async Task Proc(string proc, List<EffectHolder> chain, object[] args)
     {
-       
-            string proc_optimized = EffectsUtils.StandardString(proc);
-            if (await condition.Proc(proc_optimized, cVariables, chain, holder, args))
-            {
-                List<EffectHolder> new_chain;
-                if (chain != null)
-                {
-                    new_chain = new List<EffectHolder>(chain);
-                }
-                else
-                {
-                    new_chain = new List<EffectHolder>();
-                }
-                await effect.Proc(proc_optimized, eVariables, new_chain, holder, args);
-            }
-        
+
+        string proc_optimized = EffectsUtils.StandardString(proc);
+        List<EffectHolder> new_chain;
+        if (chain != null)
+        {
+            new_chain = new List<EffectHolder>(chain);
+        }
+        else
+        {
+            new_chain = new List<EffectHolder>();
+        }
+        if (await condition.Proc(proc_optimized, cVariables, new_chain, holder, args))
+        {
+
+            await effect.Proc(proc_optimized, eVariables, new_chain, holder, args);
+        }
+
     }
 
 
@@ -107,7 +105,7 @@ public class EffectPreset : Preset
 {
     public string[] variables;
     public string baseeffect;
-    public EffectPreset ()
+    public EffectPreset()
     {
         type = PresetType.Effect;
     }

@@ -3,7 +3,10 @@ using System.Linq;
 
 public static class EffectsUtils
 {
-    public static Dictionary<Proc, string> procname;
+    public static Dictionary<Proc, string> procname = new()
+    {
+
+    };
 
     public enum Proc
     {
@@ -41,9 +44,9 @@ public static class EffectsUtils
             list = objects.ToList();
         }
 
-        
+
         list.Insert(place, param);
-        
+
         return list.ToArray();
 
     }

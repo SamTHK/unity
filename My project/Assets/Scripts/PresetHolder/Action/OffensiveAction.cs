@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 
 public class OffensiveAction : OnTurnAction
@@ -13,16 +14,21 @@ public class OffensiveAction : OnTurnAction
         actiontype = ActionType.Offensive;
     }
 
-    public virtual void Attack(ChooseResult result)
+    public virtual async Task Attack(GameEntity[] targets)
     {
-
+        AttackAction aT = new(this, targets);
+        List<EffectHolder> effects = new(chain)
+        {
+            this
+        };
+        await SpecificFullDelayProc(effects, aT);
     }
 }
 
 
 public class Projectile
 {
-    
+
 }
 
 
