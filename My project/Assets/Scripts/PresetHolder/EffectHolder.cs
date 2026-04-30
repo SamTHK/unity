@@ -26,39 +26,14 @@ public class EffectHolder
     {
         type = EffectHolderType.Level;
     }
-    #region overload
-    public async Task Proc(EffectsUtils.Proc procname, List<EffectHolder> chain, params object[] arg)
-    {
-        string proc = EffectsUtils.procname[procname];
-        if (effects[proc] != null)
-        {
-            for (int i = 0; i < effects[proc].Count; i++)
-            {
-                await effects[proc][i].Proc(proc, chain, arg);
-            }
-        }
-    }
 
-    public async Task FullProc(EffectsUtils.Proc procname, List<EffectHolder> chain, params object[] arg)
-    {
-        string proc = EffectsUtils.procname[procname];
-        await GlobalProc(proc, chain, arg);
-        await Proc(proc, chain, arg);
-    }
+  
 
     public virtual async Task SpecificFullProc(EffectsUtils.Proc procname, List<EffectHolder> chain, bool global = true, params object[] arg)
     {
         string proc = EffectsUtils.procname[procname];
-        if (global)
-        { await GlobalProc(proc, chain, arg); }
-        await Proc(proc, chain, arg);
+        SpecificFullProc(proc, global, chain, arg);
     }
-
-
-
-
-
-    #endregion
 
 
     public async Task Proc(string proc, List<EffectHolder> chain, object[] arg)
@@ -79,10 +54,15 @@ public class EffectHolder
         await Proc(proc, chain, arg);
     }
 
-    public virtual async Task SpecificFullProc(string proc, List<EffectHolder> chain, bool global = true, params object[] arg)
+    public async Task SpecificFullProc(string proc, List<EffectHolder> chain, bool global = true, params object[] arg)
+    {
+        SpecificFullProc(proc, global, chain, arg);
+    }
+
+    protected virtual async Task SpecificFullProc(string proc, bool global, List<EffectHolder> chain, object[] arg)
     {
         if (global)
-        { await GlobalProc(proc, chain, arg);  }
+        { await GlobalProc(proc, chain, arg); }
         await Proc(proc, chain, arg);
     }
 
@@ -91,35 +71,72 @@ public class EffectHolder
         string proc = action.procname;
         if (arg == null) { arg = new object[1] { action }; } else { arg = EffectsUtils.ObjectList(arg, action_position, action); }
 
-        await SpecificFullProc(proc, chain, true , arg);
+        await SpecificFullProc(proc, true, chain , arg);
         await action.Run();
     }
 
-    public async Task SpecificFullDelayProc(List<EffectHolder> holders, List<EffectHolder> chain, DelayAction action, int action_position, params object[] arg)
+    public async Task SpecificFullDelayProc(List<EffectHolder> holders, List<EffectHolder> chain, DelayAction action, int action_position = 0, params object[] arg)
     {
         string proc = action.procname;
         if (arg == null) { arg = new object[1] { action }; } else { arg = EffectsUtils.ObjectList(arg, action_position, action); }
 
-        await SpecificFullProc(proc, chain, true, arg);
+        await SpecificFullProc(proc, true, chain, arg);
+        arg = EffectsUtils.ObjectList(arg, 0, 0);
 
         for (int i = 0; i < holders.Count; i++)
         {
-            holders[i].SpecificFullProc(proc, chain, false, arg);
+            arg[0] = i;
+            holders[i]?.SpecificFullProc(proc, false, chain, arg);
         }
 
         await action.Run();
     }
 
-    public async Task SpecificFullDelayProc(List<GameEntity> entities, List<EffectHolder> chain, DelayAction action, int action_position, params object[] arg)
+    public async Task SpecificFullDelayProc(EffectHolder[] holders, List<EffectHolder> chain, DelayAction action, int action_position = 0, params object[] arg)
     {
         string proc = action.procname;
         if (arg == null) { arg = new object[1] { action }; } else { arg = EffectsUtils.ObjectList(arg, action_position, action); }
 
-        await SpecificFullProc(proc, chain, true, arg);
+        await SpecificFullProc(proc, true, chain, arg);
+        arg = EffectsUtils.ObjectList(arg, 0, 0);
 
+        for (int i = 0; i < holders.Length; i++)
+        {
+            arg[0] = i;
+            holders[i]?.SpecificFullProc(proc, false, chain, arg);
+        }
+
+        await action.Run();
+    }
+
+    public async Task SpecificFullDelayProc(List<GameEntity> entities, List<EffectHolder> chain, DelayAction action, int action_position = 0, params object[] arg)
+    {
+        string proc = action.procname;
+        if (arg == null) { arg = new object[1] { action }; } else { arg = EffectsUtils.ObjectList(arg, action_position, action); }
+
+        await SpecificFullProc(proc, true, chain, arg);
+        arg = EffectsUtils.ObjectList(arg, 0, 0);
         for (int i = 0; i < entities.Count; i++)
         {
-            entities[i].Proc(proc, chain, arg);
+            arg[0] = i;
+            entities[i]?.Proc(proc,chain, arg);
+        }
+
+        await action.Run();
+    }
+
+    public async Task SpecificFullDelayProc(GameEntity[] entities, List<EffectHolder> chain, DelayAction action, int action_position = 0, params object[] arg)
+    {
+        string proc = action.procname;
+        if (arg == null) { arg = new object[1] { action }; } else { arg = EffectsUtils.ObjectList(arg, action_position, action); }
+
+        await SpecificFullProc(proc, true, chain, arg);
+        arg = EffectsUtils.ObjectList(arg, 0, 0);
+        for (int i = 0; i < entities.Length; i++)
+        {
+            
+            arg[0] = i;
+            entities[i]?.Proc(proc, chain, arg);
         }
 
         await action.Run();
@@ -197,7 +214,7 @@ public class EffectHolder
         await FullProc("effectadded", chain, eP);
     }
 
-    public async Task AddEffect(string effect, string condition, List<EffectHolder> chain, params object[] arg)
+    public async Task AddEffect(string effect, string condition, List<EffectHolder> chain)
     {
         EffectPreset efPr = JsonUtility.FromJson<EffectPreset>(effect);
         ConditionPreset cnPr = JsonUtility.FromJson<ConditionPreset>(condition);
@@ -216,7 +233,7 @@ public class EffectHolder
         await FullProc("effectadded", chain, eP);
     }
 
-    public async Task RemoveDefaultEffect(string defaultname, List<EffectHolder> chain, params object[] arg)
+    public async Task RemoveDefaultEffect(string defaultname, List<EffectHolder> chain)
     {
         EffectPair effectPair = defaulteffects[defaultname];
         if (effectPair != null)
@@ -237,7 +254,7 @@ public class EffectHolder
             await FullProc("effectremoved", chain, effectPair);
         }
     }
-    public async Task RemoveEffect(EffectPair effectPair, List<EffectHolder> chain, params object[] arg)
+    public async Task RemoveEffect(EffectPair effectPair, List<EffectHolder> chain)
     {
         foreach (string key in effectPair.firstproc)
         {

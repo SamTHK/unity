@@ -32,10 +32,7 @@ public class LevelManager : MonoBehaviour
     {
         if (init == true)
         {
-            if (preset != null)
-            {
-                preset.Update(this);
-            }
+            preset?.Update(this);
 
 
             PreviousMouseCell = MouseToCell();
@@ -47,7 +44,7 @@ public class LevelManager : MonoBehaviour
     }
 
     #region init
-    [SerializeField] public GameObject Opuddle, Ochoose, Orange;
+    [SerializeField] GameObject Opuddle, Ochoose, Orange;
     [SerializeField] TileBase tileBase;
     public Dictionary<string, int> default_walk = new();
     public Dictionary<string, int> default_bullet = new();
@@ -238,12 +235,8 @@ public class LevelManager : MonoBehaviour
                 playable = true;
                 running = false;
                 previousPage.Clear();
-
-                if (cardPlaying != null)
-                {
-                    cardPlaying.SpecificFullProc("cardend", null, true, cardPlaying);
-                    cardPlaying = null;
-                }
+                await cardPlaying?.SpecificFullProc("cardend", null, true, cardPlaying);
+                cardPlaying = null;
             }
         }
     }

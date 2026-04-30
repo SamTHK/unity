@@ -16,12 +16,12 @@ public class OffensiveAction : OnTurnAction
 
     public virtual async Task Attack(GameEntity[] targets)
     {
-        AttackAction aT = new(this, targets);
         List<EffectHolder> effects = new(chain)
         {
             this
         };
-        await SpecificFullDelayProc(effects, aT);
+        AttackAction aT = new(this, targets, effects);
+        await SpecificFullDelayProc(targets, effects, aT);
     }
 }
 

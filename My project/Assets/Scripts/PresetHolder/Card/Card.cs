@@ -35,7 +35,7 @@ public class Card : EffectHolder
 
 
 
-    public override async Task SpecificFullProc(string proc, List<EffectHolder> chain, bool global = true, params object[] arg)
+    protected override async Task SpecificFullProc(string proc, bool global, List<EffectHolder> chain, object[] arg)
     {
         if (global)
         { await GlobalProc(proc, chain, arg); }

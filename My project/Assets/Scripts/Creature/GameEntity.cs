@@ -35,5 +35,10 @@ public class GameEntity : MonoBehaviour
     {
 
     }
+
+    public async Task UpdateVisual()
+    {
+
+    }    
 }
 

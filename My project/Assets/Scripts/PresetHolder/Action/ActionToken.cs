@@ -36,7 +36,7 @@ public abstract class ActionToken : EffectHolder
         return (ActionToken)MemberwiseClone();
     }
 
-    public override async Task SpecificFullProc(string proc, List<EffectHolder> chain, bool global = true, params object[] arg)
+    protected override async Task SpecificFullProc(string proc, bool global, List<EffectHolder> chain, object[] arg)
     {
         if (global)
         { await GlobalProc(proc, chain, arg); }
@@ -66,7 +66,7 @@ public class OnTurnAction : ActionToken
 
 public class DefensiveAction : ActionToken
 {
-    public int lifetime, roundstartexisting;
+    public int lifetime, roundstartexisting, minRoll, maxRoll;
     public DefensiveAction(GameEntity player, EffectHolder holder) : base(player, holder)
     {
         actiontype = ActionType.Defensive;
