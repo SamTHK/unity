@@ -20,8 +20,8 @@ public class OffensiveAction : OnTurnAction
         {
             this
         };
-        AttackAction aT = new(this, targets, effects);
-        await SpecificFullDelayProc(targets, effects, aT);
+        AttackWrapper aT = new(this, targets, effects);
+        aT.Activate();
     }
 }
 

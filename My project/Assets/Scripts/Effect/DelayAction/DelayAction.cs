@@ -6,13 +6,20 @@ using System.Threading.Tasks;
 public class DelayAction
 {
     public string procname;
-    public List<Pair<Func<DelayAction, Task>, int>> function_list = new();
-    public bool ran;
+    
+    public bool ran = false;
+
 
     protected async virtual Task<bool> DefaultRun()
     {
         return true;
     }
+
+
+
+
+    public List<Pair<Func<DelayAction, Task>, int>> function_list = new();
+    
 
     public void AddFunc(Func<DelayAction, Task> func, int priority)
     {
@@ -34,7 +41,8 @@ public class DelayAction
 
     public async Task Run()
     {
-        bool ran = false;
+
+        bool tried_running = false;
         foreach (Pair<Func<DelayAction, Task>, int> fu in function_list)
         {
             if (fu.value < 0 || ran)
@@ -43,18 +51,32 @@ public class DelayAction
             }
             else
             {
+                tried_running = true;
                 if (!await DefaultRun())
                 {
-                    this.ran = false;
                     return;
                 }
                 this.ran = true;
-                ran = true;
+
+                await fu.key(this);
             }
+        }
+
+        if (!tried_running)
+        {
+            if (!await DefaultRun())
+            {
+                return;
+            }
+            this.ran = true;
+
         }
     }
 
+    
 }
+
+
 
 public class Pair<T, N>
 {

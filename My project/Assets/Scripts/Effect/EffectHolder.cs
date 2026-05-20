@@ -109,6 +109,32 @@ public class EffectHolder
         await action.Run();
     }
 
+    public async Task SpecificFullDelayProc(EffectHolder holder, List<EffectHolder> chain, DelayAction action, int action_position = 0, params object[] arg)
+    {
+        string proc = action.procname;
+        if (arg == null) { arg = new object[1] { action }; } else { arg = EffectsUtils.ObjectList(arg, action_position, action); }
+         
+        await SpecificFullProc(proc, true, chain, arg);
+        arg = EffectsUtils.ObjectList(arg, 0, 0);
+
+        holder?.SpecificFullProc(proc, false, chain, arg);
+        await action.Run();
+    }
+
+    public async Task SpecificFullDelayProc(GameEntity entity, List<EffectHolder> chain, DelayAction action, int action_position = 0, params object[] arg)
+    {
+        string proc = action.procname;
+        if (arg == null) { arg = new object[1] { action }; } else { arg = EffectsUtils.ObjectList(arg, action_position, action); }
+
+        await SpecificFullProc(proc, true, chain, arg);
+        arg = EffectsUtils.ObjectList(arg, 0, 0);
+        entity?.Proc(proc, chain, arg);
+        
+
+        await action.Run();
+    }
+
+
     public async Task SpecificFullDelayProc(List<GameEntity> entities, List<EffectHolder> chain, DelayAction action, int action_position = 0, params object[] arg)
     {
         string proc = action.procname;
@@ -134,7 +160,6 @@ public class EffectHolder
         arg = EffectsUtils.ObjectList(arg, 0, 0);
         for (int i = 0; i < entities.Length; i++)
         {
-            
             arg[0] = i;
             entities[i]?.Proc(proc, chain, arg);
         }
