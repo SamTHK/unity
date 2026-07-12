@@ -11,8 +11,10 @@ public class EffectHolder
     public List<string> tags = new();
     public Dictionary<string, object> save_vars = new();
     public Dictionary<string, List<EffectPair>> effects = new();
-    private readonly Dictionary<string, EffectPair> defaulteffects;
+    private Dictionary<string, EffectPair> defaulteffects;
     public EffectHolderType type;
+
+    public bool silenced = false;
 
     public enum EffectHolderType
     {
@@ -38,11 +40,14 @@ public class EffectHolder
 
     public async Task Proc(string proc, List<EffectHolder> chain, object[] arg)
     {
-        if (effects[proc] != null)
+        if (!silenced)
         {
-            for (int i = 0; i < effects[proc].Count; i++)
+            if (effects[proc] != null)
             {
-                await effects[proc][i].Proc(proc, chain, arg);
+                for (int i = 0; i < effects[proc].Count; i++)
+                {
+                    await effects[proc][i].Proc(proc, chain, arg);
+                }
             }
         }
     }
@@ -109,6 +114,77 @@ public class EffectHolder
         await action.Run();
     }
 
+    public static async Task StaticSpecificFullDelayProc(List<EffectHolder> holders, List<EffectHolder> chain, DelayAction action, int action_position = 0, params object[] arg)
+    {
+        string proc = action.procname;
+        if (arg == null) { arg = new object[1] { action }; } else { arg = EffectsUtils.ObjectList(arg, action_position, action); }
+
+        arg = EffectsUtils.ObjectList(arg, 0, 0);
+
+        for (int i = 0; i < holders.Count; i++)
+        {
+            arg[0] = i;
+            holders[i]?.SpecificFullProc(proc, false, chain, arg);
+        }
+
+        await action.Run();
+    }
+
+    public static async Task StaticSpecificFullDelayProc(EffectHolder[] holders, List<EffectHolder> chain, DelayAction action, int action_position = 0, params object[] arg)
+    {
+        string proc = action.procname;
+        if (arg == null) { arg = new object[1] { action }; } else { arg = EffectsUtils.ObjectList(arg, action_position, action); }
+
+        arg = EffectsUtils.ObjectList(arg, 0, 0);
+
+        for (int i = 0; i < holders.Length; i++)
+        {
+            arg[0] = i;
+            holders[i]?.SpecificFullProc(proc, false, chain, arg);
+        }
+
+        await action.Run();
+    }
+
+    public async Task SpecificFullDelayProc(TargetWrapper[] holders, List<EffectHolder> chain, DelayAction action, int action_position = 0, params object[] arg)
+    {
+        string proc = action.procname;
+        if (arg == null) { arg = new object[1] { action }; } else { arg = EffectsUtils.ObjectList(arg, action_position, action); }
+
+        await SpecificFullProc(proc, true, chain, arg);
+        arg = EffectsUtils.ObjectList(arg, 0, 0);
+
+        for (int i = 0; i < holders.Length; i++)
+        {
+            arg[0] = i;
+            holders[i]?.reserve?.SpecificFullProc(proc, false, chain, arg);
+        }
+
+        await action.Run();
+    }
+
+    public async Task SpecificFullDelayProc(HitWrapper[] holders, List<EffectHolder> chain, DelayAction action, int action_position = 0, params object[] arg)
+    {
+        string proc = action.procname;
+        if (arg == null) { arg = new object[1] { action }; } else { arg = EffectsUtils.ObjectList(arg, action_position, action); }
+
+        await SpecificFullProc(proc, true, chain, arg);
+        arg = EffectsUtils.ObjectList(arg, 0, 0);
+
+        for (int i = 0; i < holders.Length; i++)
+        {
+            arg[0] = i;
+            if (holders[i] != null && holders[i].wrapper != null)
+            {
+                foreach (DefensiveToken a in holders[i].wrapper.actions)
+                {
+                    a?.SpecificFullProc(proc, false, chain, arg);
+                }    
+            }    
+        }
+        await action.Run();
+    }
+
     public async Task SpecificFullDelayProc(EffectHolder holder, List<EffectHolder> chain, DelayAction action, int action_position = 0, params object[] arg)
     {
         string proc = action.procname;
@@ -167,7 +243,7 @@ public class EffectHolder
         await action.Run();
     }
 
-    protected async Task GlobalProc(string proc, List<EffectHolder> chain, params object[] arg)
+    protected async Task GlobalProc(string proc, List<EffectHolder> chain, object[] arg)
     {
         if (type != EffectHolderType.Level)
         {

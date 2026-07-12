@@ -2,6 +2,10 @@
 
 public class Test : MonoBehaviour
 {
+
+    string description = "Walk a short distance. Clear all [Puddle,Fire], [Puddle,BiggerFire] and [Puddle,BiggestFire] gain 1 Decaying Power Up for tile 5/3/1 tile cleared. Do a medium melee attack that hit in straight line";
+
+
     private void Start()
     {
         idk2 e = new()

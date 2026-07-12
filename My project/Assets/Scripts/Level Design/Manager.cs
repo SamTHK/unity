@@ -9,6 +9,7 @@ public class Manager : MonoBehaviour
     public string Language = "english";
     [SerializeField] GameObject levelManager;
     public List<LocalizationUser> localizationUsers = new();
+    public static System.Random level_seed = new(), number_seed = new();
     void Start()
     {
         DontDestroyOnLoad(gameObject);

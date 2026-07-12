@@ -4,12 +4,12 @@ using System.Text;
 using System.Threading.Tasks;
 
 
-public class OffensiveAction : OnTurnAction
+public class OffensiveToken : OnTurnToken
 {
     public int minRoll, maxRoll;
 
 
-    public OffensiveAction(GameEntity player, EffectHolder holder) : base(player, holder)
+    public OffensiveToken(GameEntity player, EffectHolder holder) : base(player, holder)
     {
         actiontype = ActionType.Offensive;
     }

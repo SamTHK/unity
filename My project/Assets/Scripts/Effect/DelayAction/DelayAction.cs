@@ -21,8 +21,10 @@ public class DelayAction
     public List<Pair<Func<DelayAction, Task>, int>> function_list = new();
     
 
-    public void AddFunc(Func<DelayAction, Task> func, int priority)
+    public virtual void AddFunc(Func<DelayAction, Task> func, int priority)
     {
+
+
         if (function_list.Count == 0 || function_list.Last().value <= priority)
         {
             function_list.Add(new Pair<Func<DelayAction, Task>, int>(func, priority));
@@ -39,7 +41,7 @@ public class DelayAction
         }
     }
 
-    public async Task Run()
+    public virtual async Task Run()
     {
 
         bool tried_running = false;
@@ -52,11 +54,9 @@ public class DelayAction
             else
             {
                 tried_running = true;
-                if (!await DefaultRun())
-                {
-                    return;
-                }
-                this.ran = true;
+                ran = await DefaultRun();
+                
+                if (!ran) { return;  }
 
                 await fu.key(this);
             }
@@ -64,12 +64,7 @@ public class DelayAction
 
         if (!tried_running)
         {
-            if (!await DefaultRun())
-            {
-                return;
-            }
-            this.ran = true;
-
+            ran = await DefaultRun();
         }
     }
 

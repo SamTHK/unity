@@ -17,7 +17,8 @@ public class Card : EffectHolder
 
     public List<Page> pages = new();
     public int turn_reserved = 0;
-    // remember to count down the reserve
+
+    // remember to count up the reserve
 
     public void AddAction()
     {

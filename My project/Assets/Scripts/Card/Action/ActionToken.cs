@@ -54,29 +54,30 @@ public abstract class ActionToken : EffectHolder
 
 }
 
-public class OnTurnAction : ActionToken
+public class OnTurnToken : ActionToken
 {
 
     public bool forceRechoose;
-    public OnTurnAction(GameEntity player, EffectHolder holder) : base(player, holder)
+    public OnTurnToken(GameEntity player, EffectHolder holder) : base(player, holder)
     {
 
     }
 }
 
-public class DefensiveAction : ActionToken
+public class DefensiveToken : ActionToken
 {
     public int lifetime, roundstartexisting, minRoll, maxRoll;
-    public DefensiveAction(GameEntity player, EffectHolder holder) : base(player, holder)
+    public bool clash;
+    public DefensiveToken(GameEntity player, EffectHolder holder) : base(player, holder)
     {
         actiontype = ActionType.Defensive;
     }
 }
 
 
-public class MovementAction : OnTurnAction
+public class MovementToken : OnTurnToken
 {
-    public MovementAction(GameEntity player, EffectHolder holder) : base(player, holder)
+    public MovementToken(GameEntity player, EffectHolder holder) : base(player, holder)
     {
         actiontype = ActionType.Movement;
     }
@@ -84,9 +85,9 @@ public class MovementAction : OnTurnAction
 
 
 
-public class EffectAction : OnTurnAction
+public class EffectToken : OnTurnToken
 {
-    public EffectAction(GameEntity player, EffectHolder holder) : base(player, holder)
+    public EffectToken(GameEntity player, EffectHolder holder) : base(player, holder)
     {
         actiontype = ActionType.Effect;
     }

@@ -5,6 +5,8 @@ public class Page
     public GameEntity player;
     public Card card;
     public int turnleft;
+    public bool played;
+    public bool rigid, seperate, priority;
     public virtual bool OnTurnCheck()
     {
         return default;
@@ -19,11 +21,13 @@ public class Page
     {
         return null;
     }
+
 }
 public class OnTurnPage : Page
 {
     public ChooseToken choose;
-    public List<OnTurnAction> actions;
+    public List<OnTurnToken> actions;
+    
 
     public override bool OnTurnCheck()
     {
@@ -40,14 +44,14 @@ public class OnTurnPage : Page
 
     public override Page ActionClone(List<EffectHolder> chain)
     {
-        List<OnTurnAction> newa = new();
-        foreach (OnTurnAction token in actions)
+        List<OnTurnToken> newa = new();
+        foreach (OnTurnToken token in actions)
         {
             if (chain != null)
             {
                 token.chain = new(chain);
             }
-            newa.Add((OnTurnAction)token.ShallowClone());
+            newa.Add((OnTurnToken)token.ShallowClone());
         }
 
         return new OnTurnPage()
@@ -65,7 +69,8 @@ public class OnTurnPage : Page
 
 public class DefensivePage : Page
 {
-    public List<DefensiveAction> actions;
+    public List<DefensiveToken> actions;
+    public int lifetime;
 
     public override bool CheckLeft()
     {
@@ -81,14 +86,14 @@ public class DefensivePage : Page
 
     public override Page ActionClone(List<EffectHolder> chain)
     {
-        List<DefensiveAction> newa = new();
-        foreach (DefensiveAction token in actions)
+        List<DefensiveToken> newa = new();
+        foreach (DefensiveToken token in actions)
         {
             if (chain != null)
             {
                 token.chain = new(chain);
             }
-            newa.Add((DefensiveAction)token.ShallowClone());
+            newa.Add((DefensiveToken)token.ShallowClone());
         }
 
         return new DefensivePage()

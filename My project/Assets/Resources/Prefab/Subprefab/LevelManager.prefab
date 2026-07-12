@@ -57,11 +57,76 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dda6a5a8c64a3fe44aceb687fd985ba9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  pointAction:
+    m_Name: Point
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: 7a5cc917-0e86-409b-a342-81bff06343f3
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []
+    m_Flags: 0
+  interactAction:
+    m_Name: Interact
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: fd883520-db3c-46e9-b43b-8807046c87df
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []
+    m_Flags: 0
+  cancelAction:
+    m_Name: Cancel
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: 27f3d5f1-a32e-46b9-8f82-dab89bece543
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []
+    m_Flags: 0
+  bigcancelAction:
+    m_Name: Bigcancel
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: 59ef7d64-cc32-43b7-b0b5-cf585f75e96a
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []
+    m_Flags: 0
+  biginteractAction:
+    m_Name: Biginteract
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: f5fbd6d8-7f4b-4289-b7b3-74420d6fb960
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []
+    m_Flags: 0
+  rotateAction:
+    m_Name: Rotate
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: dd92f92f-e043-4c0e-b1fb-e86561792d04
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []
+    m_Flags: 0
   Opuddle: {fileID: 7113750325895830109, guid: 45eeeedb88aad014ea6912bd9d5af509, type: 3}
   Ochoose: {fileID: 7113750325895830109, guid: 7fb0b0798f2da6048a49ed22e8705aba, type: 3}
   Orange: {fileID: 7113750325895830109, guid: d026ebccd489ab14982536b1b9929809, type: 3}
   tileBase: {fileID: 11400000, guid: 367c4a47c1d87b941be36ac058697efd, type: 2}
   tags: []
-  returnable: 0
+  minBound: {x: 0, y: 0, z: 0}
+  maxBound: {x: 0, y: 0, z: 0}
+  entities: []
+  turn: 0
+  round: 0
+  telegraphinguse: 0
+  turn_of: {fileID: 0}
+  playable: 1
+  running: 0
   rotate: 0
   maxrotate: 0
+  cellAvailable: []
+  cellChosen: []
+  rotateChosen: 

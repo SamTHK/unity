@@ -10,7 +10,7 @@ public class GameEntity : MonoBehaviour
     public List<string> tags = new();
     public string Oname;
     public Vector3Int position;
-    public List<DefensiveAction> defenses = new();
+    public List<DefensiveToken> defenses = new();
     public int health {  get; protected set; }
     
 
@@ -40,5 +40,25 @@ public class GameEntity : MonoBehaviour
     {
 
     }    
+
+    public virtual async Task EndTurn()
+    {
+
+    }
+
+    public virtual async Task StartTurn()
+    {
+
+    }
+
+    public virtual async Task EndRound()
+    {
+
+    }
+
+    public virtual async Task<int> Damage(int damage)
+    {
+        return damage;
+    }
 }
 
