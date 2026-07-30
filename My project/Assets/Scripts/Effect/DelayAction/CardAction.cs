@@ -12,19 +12,25 @@ public class CardPlayAction : DelayAction
     public List<EffectHolder> chain;
     public bool seperate = false;
     public int pages_added = 0;
+    public bool priority = true, rigid = true, allow = true, condition_fullfilled = false;
 
-    public CardPlayAction(LevelManager levelManager, Card card, List<EffectHolder> chain)
+
+    public CardPlayAction(LevelManager levelManager, Card card, bool priority, bool rigid, bool condition_fullfilled, bool allow, List<EffectHolder> chain)
     {
-        procname = "cardstart";
+        procname = "card_play";
         this.levelManager = levelManager;
         this.card = card;
         this.chain = chain;
+        this.priority = priority; /// check if priority and rigid is right, true = it is right
+        this.rigid = rigid;
+
+          
     }
 
     private bool CheckRigid(Page p)
     {
         Card card = levelManager.cardPlaying;
-        if (p == null || card == null || p.rigid == false) return false;
+        if (p == null || card == null || p.rigid == false || card.place != Card.PlaceCard.hand) return false;
 
         
         CardHolder c = levelManager.turn_of.cardHolder;
@@ -61,14 +67,14 @@ public class CardPlayAction : DelayAction
     protected async override Task<bool> DefaultRun()
     {
         List<Page> pages = card.pages;
-        if (pages == null || pages.Count == 0)
+        if (pages == null || allow == false)
         {
             return false;
         }
         bool priority_disturbed = true;
         
         int tr = card.turn_reserved;
-        if (tr == 0)
+        if (tr == -1)
         {
             for (int i = 0; i < pages.Count; i++)
             {
@@ -103,7 +109,7 @@ public class CardPlayAction : DelayAction
                     }
                     else
                     {
-                        card.turn_reserved = 1;
+                        card.turn_reserved = 0;
                     }
                     
                 }
@@ -148,25 +154,35 @@ public class CardPlayAction : DelayAction
             }
         }
 
-        if (pages_added > 0 && priority_disturbed == true)
+        if (pages_added > 0)
         {
-            levelManager.priority_disturbed = true;
+            if (priority_disturbed == true)
+            {
+                levelManager.priority_disturbed = true;
+            }
+
+            
+        }
+        else
+        {
+            return false;
         }    
+        
 
         
         return true;
     }
 }
 
-public class AddActionAction : DelayAction
+public class AddTokenAction : DelayAction
 {
     public OnTurnToken action;
     public int action_index;
     public LevelManager levelManager;
 
-    public AddActionAction(LevelManager levelManager, OnTurnToken action, int action_index)
+    public AddTokenAction(LevelManager levelManager, OnTurnToken action, int action_index)
     {
-        procname = "addaction";
+        procname = "token_parce";
         this.action = action;
         this.action_index = action_index;
         this.levelManager = levelManager;
@@ -179,10 +195,12 @@ public class AddActionAction : DelayAction
 
         if (action_index < levelManager.currentPage.actions.Count)
         {
+            action.page = levelManager.currentPage;
             levelManager.currentPage.actions.Insert(action_index, action);
         }
         else
         {
+            action.page = levelManager.currentPage;
             levelManager.currentPage.actions.Add(action);
         }
 
@@ -198,7 +216,7 @@ public class AddPageAction : DelayAction
 
     public AddPageAction(LevelManager levelManager, Page page, int action_index)
     {
-        procname = "addpage";
+        procname = "page_parce";
         this.page = page;
 
         this.action_index = action_index;
@@ -230,7 +248,7 @@ public class DefenseReservedAction : DelayAction
 
     public DefenseReservedAction(LevelManager levelManager, DefensiveToken action)
     {
-        procname = "defensereserved";
+        procname = "defense_reserved";
         this.action = action;
         this.levelManager = levelManager;
     }
@@ -246,3 +264,30 @@ public class DefenseReservedAction : DelayAction
     }
 }
 
+public class CardChangePlaceAction : DelayAction
+{
+    public Card card;
+    public CardHolder holder;
+    public Card.PlaceCard place;
+    public bool allow = true, random;
+    public int position;
+
+    public CardChangePlaceAction(CardHolder holder, Card card, Card.PlaceCard place, int position, bool random)
+    {
+        this.card = card;
+        this.place = place;
+        this.holder = holder;
+        this.random = random;
+
+    }
+
+    protected async override Task<bool> DefaultRun()
+    {
+        if (!allow || card == null)
+            return false;
+
+
+        holder?.ChangePlaceInternal(card, place, position, random);
+        return true;
+    }
+}

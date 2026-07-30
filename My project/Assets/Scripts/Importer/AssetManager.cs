@@ -33,7 +33,7 @@ public class AssetManager : MonoBehaviour
         presets.Clear();
         internals.Clear();
     }
-    public async void PreLoadAsset<AnyThing>(string thing) where AnyThing : UnityEngine.Object
+    public async void PreLoadAsset<AnyThing>(string thing) 
     {
         string code = thing + "-" + typeof(AnyThing).ToString();
         if (objects[code] == null)
@@ -100,12 +100,12 @@ public class AssetManager : MonoBehaviour
         Debug.Log("Error: FILE " + thing + " NOT FOUND");
         return null;
     }
-    public AnyThing LoadAsset<AnyThing>(string thing) where AnyThing : UnityEngine.Object
+    public AnyThing LoadAsset<AnyThing>(string thing) 
     {
         string code = thing + "-" + typeof(AnyThing).ToString();
         if (objects.TryGetValue(code, out object obj))
         {
-            return obj as AnyThing;
+            return (AnyThing)obj;
         }
         else
         {
@@ -117,7 +117,7 @@ public class AssetManager : MonoBehaviour
             {
                 loaded.Add(handlesave);
                 objects[code] = handlesave.Result;
-                return objects[code] as AnyThing;
+                return (AnyThing)objects[code];
 
             }
             else
@@ -126,15 +126,15 @@ public class AssetManager : MonoBehaviour
             }
         }
         Debug.Log("Error: FILE " + thing + " NOT FOUND");
-        return null;
+        return default;
     } 
-    public async Task<AnyThing> LoadAssetAsync<AnyThing>(string thing) where AnyThing : UnityEngine.Object
+    public async Task<AnyThing> LoadAssetAsync<AnyThing>(string thing)
     {
 
         string code = thing + "-" + typeof(AnyThing).ToString();
         if (objects.TryGetValue(code, out object obj))
         {
-            return obj as AnyThing;
+            return (AnyThing)obj;
         }
         else
         {
@@ -150,7 +150,7 @@ public class AssetManager : MonoBehaviour
                 loaded.Add(handlesave);
                 objects[code] = handlesave.Result;
                                 
-                    return objects[code] as AnyThing;
+                    return (AnyThing)objects[code];
 
             }
             else
@@ -159,7 +159,7 @@ public class AssetManager : MonoBehaviour
             }
         }
         Debug.Log("Error: FILE " + thing + " NOT FOUND");
-        return null;
+        return default;
         
     }
 

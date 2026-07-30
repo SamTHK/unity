@@ -32,6 +32,7 @@ public class EffectPair
 
     public string name { get; protected set; }
     public bool defaultEffect { get; protected set; }
+    public bool original = false;
     public string[] firstproc { get; protected set; }
 
     public string[] cVariables;

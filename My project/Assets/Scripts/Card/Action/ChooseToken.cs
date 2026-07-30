@@ -7,6 +7,7 @@ public class ChooseToken
     public ChooseResult result;
     public EffectHolder holder; ///most of the it's the card
     public GameEntity player;
+    public string description;
 
     public string sizeShape, rangeShape;
     public ChooseType type;

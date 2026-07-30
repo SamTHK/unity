@@ -11,6 +11,7 @@ public class GameEntity : MonoBehaviour
     public string Oname;
     public Vector3Int position;
     public List<DefensiveToken> defenses = new();
+    public List<string> movement_tag;
     public int health {  get; protected set; }
     
 

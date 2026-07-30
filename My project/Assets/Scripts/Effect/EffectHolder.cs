@@ -11,7 +11,6 @@ public class EffectHolder
     public List<string> tags = new();
     public Dictionary<string, object> save_vars = new();
     public Dictionary<string, List<EffectPair>> effects = new();
-    private Dictionary<string, EffectPair> defaulteffects;
     public EffectHolderType type;
 
     public bool silenced = false;
@@ -34,7 +33,7 @@ public class EffectHolder
     public virtual async Task SpecificFullProc(EffectsUtils.Proc procname, List<EffectHolder> chain, bool global = true, params object[] arg)
     {
         string proc = EffectsUtils.procname[procname];
-        SpecificFullProc(proc, global, chain, arg);
+        await SpecificFullProc(proc, global, chain, arg);
     }
 
 
@@ -61,7 +60,7 @@ public class EffectHolder
 
     public async Task SpecificFullProc(string proc, List<EffectHolder> chain, bool global = true, params object[] arg)
     {
-        SpecificFullProc(proc, global, chain, arg);
+        await SpecificFullProc(proc, global, chain, arg);
     }
 
     protected virtual async Task SpecificFullProc(string proc, bool global, List<EffectHolder> chain, object[] arg)
@@ -253,28 +252,9 @@ public class EffectHolder
 
 
 
-    public async Task AddEffectPreset(string defaultname, string effect, string condition, List<EffectHolder> chain, object[] arg)
-    {
-        AssetManager a = ObjectUtils.AssetManager;
-        EffectPreset efPr = await a.LoadPresetAsync<EffectPreset>(effect);
-        ConditionPreset cnPr = await a.LoadPresetAsync<ConditionPreset>(condition);
-        EffectPair eP = new(this, efPr, cnPr, true);
-        string[] firstproc = cnPr.firstproc;
+ 
 
-        foreach (string proc in firstproc)
-        {
-            if (effects[proc] == null)
-            {
-                effects[proc] = new();
-            }
-            effects[proc].Add(eP);
-        }
-        defaulteffects[defaultname] = eP;
-
-        await FullProc("effectadded", chain, eP);
-    }
-
-    public async Task AddEffect(string defaultname, string effect, string condition, List<EffectHolder> chain)
+    public async Task AddEffect(string effect, string condition, bool og, List<EffectHolder> chain)
     {
 
         EffectPreset efPr = JsonUtility.FromJson<EffectPreset>(effect);
@@ -288,14 +268,15 @@ public class EffectHolder
             {
                 effects[proc] = new();
             }
+            eP.original = og;
             effects[proc].Add(eP);
         }
-        defaulteffects[defaultname] = eP;
+        
 
-        await FullProc("effectadded", chain, eP);
+        await FullProc("effect_add", chain, eP);
     }
 
-    public async Task AddEffectPreset(string effect, string condition, List<EffectHolder> chain)
+    public async Task AddEffectPreset(string effect, string condition, bool og, List<EffectHolder> chain)
     {
         AssetManager a = ObjectUtils.AssetManager;
         EffectPreset efPr = await a.LoadPresetAsync<EffectPreset>(effect);
@@ -309,39 +290,43 @@ public class EffectHolder
             {
                 effects[proc] = new();
             }
+            eP.original = og;
             effects[proc].Add(eP);
         }
 
-        await FullProc("effectadded", chain, eP);
+       
+
+        await FullProc("effect_add", chain, eP);
     }
 
-    public async Task AddEffect(string effect, string condition, List<EffectHolder> chain)
-    {
-        EffectPreset efPr = JsonUtility.FromJson<EffectPreset>(effect);
-        ConditionPreset cnPr = JsonUtility.FromJson<ConditionPreset>(condition);
-        EffectPair eP = new(this, efPr, cnPr, false);
-        string[] firstproc = cnPr.firstproc;
 
-        foreach (string proc in firstproc)
+    public async Task RemoveDefaultEffect(EffectPair effectPair, List<EffectHolder> chain)
+    {
+        foreach (string key in effectPair.firstproc)
         {
-            if (effects[proc] == null)
+            if (effects[key] != null)
             {
-                effects[proc] = new();
+                
+                    effects[key].Remove(effectPair);
+                    if (effects[key].Count <= 0)
+                    {
+                        effects[key] = null;
+                    }
+                
             }
-            effects[proc].Add(eP);
         }
 
-        await FullProc("effectadded", chain, eP);
-    }
 
-    public async Task RemoveDefaultEffect(string defaultname, List<EffectHolder> chain)
+        await FullProc("effect_remove", chain, effectPair);
+        
+    }
+    public async Task RemoveEffect(EffectPair effectPair, List<EffectHolder> chain)
     {
-        EffectPair effectPair = defaulteffects[defaultname];
-        if (effectPair != null)
+        foreach (string key in effectPair.firstproc)
         {
-            foreach (string key in effectPair.firstproc)
+            if (effects[key] != null)
             {
-                if (effects[key] != null)
+                if (effectPair.defaultEffect != true && effectPair.original != true)
                 {
                     effects[key].Remove(effectPair);
                     if (effects[key].Count <= 0)
@@ -350,29 +335,30 @@ public class EffectHolder
                     }
                 }
             }
-
-
-            await FullProc("effectremoved", chain, effectPair);
         }
+
+        await FullProc("effect_remove", chain, effectPair);
     }
-    public async Task RemoveEffect(EffectPair effectPair, List<EffectHolder> chain)
+
+    public async Task RemoveOriginalEffect(EffectPair effectPair, List<EffectHolder> chain)
     {
         foreach (string key in effectPair.firstproc)
         {
             if (effects[key] != null)
             {
-                effects[key].Remove(effectPair);
-                if (effects[key].Count <= 0)
+                if (effectPair.defaultEffect != true)
                 {
-                    effects[key] = null;
+                    effects[key].Remove(effectPair);
+                    if (effects[key].Count <= 0)
+                    {
+                        effects[key] = null;
+                    }
                 }
             }
         }
 
-        await FullProc("effectremoved", chain, effectPair);
+        await FullProc("effect_remove", chain, effectPair);
     }
-
-
 
     public void AddTag(string tag)
     {

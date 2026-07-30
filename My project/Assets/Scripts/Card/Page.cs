@@ -3,10 +3,11 @@
 public class Page
 {
     public GameEntity player;
-    public Card card;
+    public EffectHolder card;
     public int turnleft;
     public bool played;
     public bool rigid, seperate, priority;
+    public string description;
     public virtual bool OnTurnCheck()
     {
         return default;

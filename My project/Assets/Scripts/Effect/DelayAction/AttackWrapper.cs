@@ -45,7 +45,7 @@ public class AttackWrapper : DelayAction
 
     public AttackWrapper(OffensiveToken action, GameEntity[] targets, List<EffectHolder> chain)
     {
-        this.procname = "attack";
+        this.procname = "action_attack";
         this.action = action;
         this.targets = targets;
         this.chain = chain;

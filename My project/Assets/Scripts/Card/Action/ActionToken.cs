@@ -7,8 +7,10 @@ public abstract class ActionToken : EffectHolder
 
     public EffectHolder holder;
     public GameEntity player;
+    public Page page;
     public List<EffectHolder> chain;
     public int index;
+    public string description;
 
     public enum ActionType
     {

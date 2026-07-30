@@ -17,7 +17,7 @@ public class LevelManager : MonoBehaviour
         rotateAction = InputSystem.actions.FindAction("Rotate");
         biginteractAction = InputSystem.actions.FindAction("Enter");
 
- 
+
         playable = true;
 
     }
@@ -29,11 +29,13 @@ public class LevelManager : MonoBehaviour
             preset?.Update(this);
 
 
-            PreviousMouseCell = MouseToCell();
+
 
 
 
             CheckActions();
+
+            PreviousMouseCell = MouseToCell();
         }
     }
 
@@ -57,7 +59,7 @@ public class LevelManager : MonoBehaviour
         void_,
         barrier_,
         wall_,
-            null_
+        null_
     }
 
     public Tilemap floorMap { get; protected set; }
@@ -164,13 +166,13 @@ public class LevelManager : MonoBehaviour
 
     #region action
     public int turn, round;
- 
+
     public Creature turn_of;
     public List<Creature> creature_list = new(); /// remember to add to entities as well
     public int turn_of_int = 0;
     public bool priority_disturbed = false; /// check if the a non-prioirty card had been played, for precheck, check in CardHolder instead
 
-    public bool playable = true, running = false;
+    public bool playable = true, running = true;
     public Card cardPlaying;
     public ActionToken actionDoing;
     public ChooseToken chooseDoing;
@@ -229,11 +231,11 @@ public class LevelManager : MonoBehaviour
             else
             {
                 playable = true;
-                running = false;
+                running = true;
                 previousPage.Clear();
                 if (cardPlaying != null)
                 {
-                    cardPlaying.SpecificFullProc("cardend", null, true, cardPlaying);
+                    cardPlaying.PingEnd();
                     cardPlayed.Add(cardPlaying);
                 }
                 cardPlaying = null;
@@ -241,21 +243,27 @@ public class LevelManager : MonoBehaviour
         }
     }
 
-    
 
-    public async Task<CardPlayAction> ParseActions(Card card, List<EffectHolder> chain)
+
+    public async Task<CardPlayAction> ParseActions(Card card, bool priority, bool rigid, bool condition_fullfilled, bool allow, List<EffectHolder> chain)
     {
-        cardPlaying = card;
 
 
-        CardPlayAction parseAction = new(this, card, chain);
+        
+        
+
+        CardPlayAction parseAction = new(this, card, priority, rigid, condition_fullfilled, allow, chain);
 
         await card.SpecificFullDelayProc(chain, parseAction, 1, card);
 
+        if (parseAction.ran == true)
+        {
+            cardPlaying = card;
+            running = false;
+            playable = false;
+        }
 
-
-
-        playable = false;
+        
         return parseAction;
     }
 
@@ -272,8 +280,10 @@ public class LevelManager : MonoBehaviour
         action.player = gameEntity;
         action.holder = holder;
         action.chain = new(chain);
-        AddActionAction aA = new(this, action, action_index);
+        AddTokenAction aA = new(this, action, action_index);
         await holder.SpecificFullDelayProc(chain, aA, 1, holder);
+
+        running = false;
         playable = false;
     }
 
@@ -289,6 +299,8 @@ public class LevelManager : MonoBehaviour
         }
         AddPageAction aA = new(this, page, page_index);
         await holder.SpecificFullDelayProc(chain, aA, 1, holder);
+
+        running = false;
         playable = false;
     }
 
@@ -304,25 +316,29 @@ public class LevelManager : MonoBehaviour
         }
         AddPageAction aA = new(this, page, page_index);
         await holder.SpecificFullDelayProc(chain, aA, 1, holder);
+
+        running = false;
         playable = false;
     }
 
     public async Task EndTurn()
     {
-        
-        await turn_of?.EndTurn();    
+
+        await turn_of?.EndTurn();
         Proc("endturn", null, null);
-        
+
         turn_of_int += 1;
         if (turn_of_int >= creature_list.Count)
         {
             EndRound();
         }
+
         turn_of = creature_list[turn_of_int];
         cardPlayed.Clear();
         priority_disturbed = false;
+
         await turn_of?.StartTurn();
-    }    
+    }
 
     private async Task EndRound()
     {
@@ -332,11 +348,10 @@ public class LevelManager : MonoBehaviour
         }
         Proc("endround", null, null);
         turn_of_int = 0;
-
         creature_list = creature_list.OrderBy(x => x.speed).ToList();
 
 
-    }    
+    }
 
     #endregion
 
@@ -350,7 +365,7 @@ public class LevelManager : MonoBehaviour
 
 
 
-   
+
 
     public Vector3Int CellRelative(Vector3Int cell)
     {
@@ -406,7 +421,7 @@ public class LevelManager : MonoBehaviour
         return (int)Mathf.Floor((dx + dy + dz) / 2);
     }
 
-    public (Dictionary<Vector3Int, int>, Dictionary<Vector3Int, Vector3Int>, List<Vector3Int>) CellRangeObstacle(Vector3Int center, int N, ObstacleCheck obstacle)
+    public (Dictionary<Vector3Int, int>, Dictionary<Vector3Int, Vector3Int>, List<Vector3Int>) CellRangeObstacle(Vector3Int center, int N, Dictionary<string, int> obstacle)
     {
         List<Vector3Int>[] cell = new List<Vector3Int>[N + 1];
         List<Vector3Int> exclude = new();
@@ -541,7 +556,7 @@ public class LevelManager : MonoBehaviour
         }
     }
 
-    public (List<Vector3Int>, List<Vector3Int>) CellLine(Vector3Int firstcell, Vector3Int secondcell, int overflow = 0, int piercing = 0, ObstacleCheck piercing_numbers = null)
+    public (List<Vector3Int>, List<Vector3Int>) CellLine(Vector3Int firstcell, Vector3Int secondcell, int overflow = 0, int piercing = 0, Dictionary<string, int> obstacle = null)
     {
         float distance = CellDistance(firstcell, secondcell);
 
@@ -553,9 +568,9 @@ public class LevelManager : MonoBehaviour
         for (int i = 0; i <= distance + overflow; i++)
         {
             Vector3Int cell = gridComponent.WorldToCell(LerpVector3(firstpos, secondpos, (float)(1.0 / distance * i)));
-            if (piercing_numbers != null)
+            if (obstacle != null)
             {
-                piercing -= PierceCheck(cell, piercing_numbers);
+                piercing -= PierceCheck(cell, obstacle);
             }
             if (piercing < 0)
             {
@@ -574,7 +589,7 @@ public class LevelManager : MonoBehaviour
         return (list, exclude);
     }
 
-    public void CellLine(ref List<Vector3Int> list, ref List<Vector3Int> exclude, Vector3Int firstcell, Vector3Int secondcell, int overflow = 0, int piercing = 0, ObstacleCheck piercing_numbers = null)
+    public void CellLine(ref List<Vector3Int> list, ref List<Vector3Int> exclude, Vector3Int firstcell, Vector3Int secondcell, int overflow = 0, int piercing = 0, Dictionary<string, int> obstacle = null)
     {
         float distance = CellDistance(firstcell, secondcell);
 
@@ -583,9 +598,9 @@ public class LevelManager : MonoBehaviour
         for (int i = 0; i <= distance + overflow; i++)
         {
             Vector3Int cell = gridComponent.WorldToCell(LerpVector3(firstpos, secondpos, (float)(1.0 / distance * i)));
-            if (piercing_numbers != null)
+            if (obstacle != null)
             {
-                piercing -= PierceCheck(cell, piercing_numbers);
+                piercing -= PierceCheck(cell, obstacle);
             }
             if (piercing < 0)
             {
@@ -662,15 +677,15 @@ public class LevelManager : MonoBehaviour
         if (barrierMap.HasTile(cell))
         {
             return TileType.barrier_;
-        }    
+        }
         if (floorMap.HasTile(cell))
         {
             return TileType.floor_;
-        }    
+        }
         if (voidMap.HasTile(cell))
         {
             return TileType.void_;
-        }    
+        }
         return TileType.null_;
     }
 
@@ -687,43 +702,51 @@ public class LevelManager : MonoBehaviour
         return entityGrid[x, y];
     }
 
-      
-    public int PierceCheck(Vector3Int cell, ObstacleCheck obstacle )
+
+
+    public int PierceCheck(Vector3Int cell, Dictionary<string, int> obstacle)
     {
-        return 0;
+
         ///higher value = harder to walk on 
 
-
-        /*int cost = 0;
-        if (piercing_numbers != null)
+        int delete = 0;
+        int cost = 0;
+        if (obstacle != null)
         {
-
+            string find = "";
             switch (HasTile(cell))
             {
-                case 
+                case TileType.floor_:
+                    find = "floor";
+                    break;
+                case TileType.wall_:
+                    find = "wall";
+                    break;
+                case TileType.barrier_:
+                    find = "barrier";
+                    break;
+                case TileType.void_:
+                    find = "void";
+                    break;
+                case TileType.null_:
+                    cost = 999999;
+                    break;
             }
 
-            if (piercing_numbers.TryGetValue("floor", out int delete) && HasTile(cell, TileType.floor_))
+            if (find != "")
             {
-                cost += delete;
+                if (obstacle.TryGetValue(find, out  delete))
+                {
+                    cost += delete;
+                }
             }
-            if (piercing_numbers.TryGetValue("wall", out delete) && HasTile(cell, TileType.wall_))
-            {
-                cost += delete;
-            }
-            if (piercing_numbers.TryGetValue("void", out delete) && HasTile(cell, TileType.void_))
-            {
-                cost = 9999;
-            }
-            if (piercing_numbers.TryGetValue("barrier", out delete) && HasTile(cell, TileType.barrier_))
-            {
-                cost += delete;
-            }
+
 
             Puddle pud = CheckPuddle(cell);
+
             if (pud != null)
             {
-                if (piercing_numbers.TryGetValue(pud.Oname, out delete))
+                if (obstacle.TryGetValue(pud.Oname, out  delete))
                 {
                     cost += delete;
                 }
@@ -736,18 +759,25 @@ public class LevelManager : MonoBehaviour
             GameEntity en = CheckEntity(cell);
             if (en != null)
             {
-           
-
-                    if (piercing_numbers.TryGetValue("entity", out delete))
+                bool tag_priority = false;
+                foreach (string s in en.movement_tag)
+                {
+                    if (obstacle.TryGetValue("entity", out  delete))
                     {
                         cost += delete;
+                        tag_priority = true;
                     }
+                }    
+
+                if (!tag_priority && obstacle.TryGetValue("entity", out  delete))
+                {
+                    cost += delete;
                 }
             }
             cost = Mathf.Max(0, cost);
         }
 
-        return cost; /// remember to do this  */
+        return cost; /// remember to do this  
     }
 
 
